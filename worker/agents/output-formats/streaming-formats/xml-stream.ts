@@ -271,7 +271,7 @@ IMPORTANT:
 			} catch (error) {
 				this.handleParsingError(
 					state,
-					`XML processing error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					`XML processing error: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 					callbacks,
 				);
 				break;

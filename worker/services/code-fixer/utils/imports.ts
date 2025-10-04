@@ -510,7 +510,7 @@ export async function getFileContent(
 			}
 		} catch (error) {
 			logger.warn(
-				`ImportUtils: Failed to fetch file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				`ImportUtils: Failed to fetch file ${filePath}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			);
 		}
 	} else {
@@ -571,7 +571,7 @@ export async function getFileAST(
 		return ast;
 	} catch (error) {
 		logger.warn(
-			`ImportUtils: Failed to parse AST for ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			`ImportUtils: Failed to parse AST for ${filePath}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 		);
 		return null;
 	}

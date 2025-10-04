@@ -1,7 +1,7 @@
 import {
 	TemplateDetails,
 	TemplateFileSchema,
-} from '../../services/sandbox/sandboxTypes'; // Import the type
+} from '../services/sandbox/sandboxTypes'; // Import the type
 import {
 	STRATEGIES,
 	PROMPT_UTILS,

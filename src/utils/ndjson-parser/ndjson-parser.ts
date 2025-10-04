@@ -1,4 +1,7 @@
-export async function* ndjsonStream(response: Response) {
+export async function* ndjsonStream<T = unknown>(
+	response: Response,
+	parser?: (obj: unknown) => T,
+) {
 	const reader = response.body!.getReader();
 	const decoder = new TextDecoder();
 	let buffer = '';
@@ -14,14 +17,16 @@ export async function* ndjsonStream(response: Response) {
 
 		for (const line of lines) {
 			if (line.trim()) {
-				yield JSON.parse(line);
+				const parsed = JSON.parse(line);
+				yield parser ? parser(parsed) : (parsed as T);
 			}
 		}
 	}
 
 	// Handle leftover buffer
 	if (buffer.trim()) {
-		yield JSON.parse(buffer);
+		const parsed = JSON.parse(buffer);
+		yield parser ? parser(parsed) : (parsed as T);
 	}
 }
 

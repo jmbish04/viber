@@ -914,7 +914,7 @@ export function applyDiff(
 	} catch (error) {
 		telemetry.success = false;
 		if (error instanceof Error && !telemetry.errorDetails) {
-			telemetry.errorDetails = error.message;
+			telemetry.errorDetails = error instanceof Error ? error.message : String(error);
 		}
 		throw error;
 	} finally {

@@ -81,7 +81,7 @@ export class KVRateLimitStore {
 		} catch (error) {
 			this.logger.error('Failed to enforce KV rate limit', {
 				key,
-				error: error instanceof Error ? error.message : 'Unknown error',
+				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
 			});
 			// Fail open
 			return { success: true };
@@ -150,7 +150,7 @@ export class KVRateLimitStore {
 			} catch (error) {
 				if (
 					error instanceof Error &&
-					error.message.includes('429') &&
+					error instanceof Error ? error.message : String(error).includes('429') &&
 					attempt < maxRetries - 1
 				) {
 					await new Promise((resolve) =>

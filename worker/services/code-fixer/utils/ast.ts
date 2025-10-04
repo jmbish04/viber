@@ -80,7 +80,7 @@ export function parseCode(code: string, options?: ParseOptions): t.File {
 		return ast;
 	} catch (error) {
 		logger.warn(
-			`TypeScript parsing failed, falling back to JavaScript parsing: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			`TypeScript parsing failed, falling back to JavaScript parsing: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 		);
 		// Fallback to JavaScript parsing - match old implementation behavior
 		const jsOptions = { ...parseOptions };
@@ -111,7 +111,7 @@ export function traverseAST(ast: t.Node, visitor: Visitor): void {
 		);
 		logger.debug(`AST traversal completed successfully`);
 	} catch (error) {
-		const message = error instanceof Error ? error.message : String(error);
+		const message = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
 		const shouldRetryNoScope =
 			message.includes("reading 'get'") ||
 			message.includes('Scope') ||
@@ -170,7 +170,7 @@ export function generateCode(
 	} catch (error) {
 		logger.error(`Code generation failed`, error);
 		throw new Error(
-			`Failed to generate code from AST: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			`Failed to generate code from AST: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 		);
 	}
 }

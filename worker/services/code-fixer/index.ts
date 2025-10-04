@@ -87,7 +87,7 @@ export async function fixProjectIssues(
 				line: issue.line,
 				column: issue.column,
 				originalMessage: issue.message,
-				reason: `Global fixer error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				reason: `Global fixer error: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			})),
 			modifiedFiles: [],
 		};
@@ -298,7 +298,7 @@ async function applyFixesSequentially(
 					line: issue.line,
 					column: issue.column,
 					originalMessage: issue.message,
-					reason: `Fixer failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					reason: `Fixer failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 				})),
 			);
 		}

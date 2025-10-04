@@ -7,6 +7,7 @@ import { BaseController } from '../baseController';
 import { RouteContext } from '../../types/route-context';
 import { ApiResponse, ControllerResponse } from '../types';
 import { AiGatewayAnalyticsService } from '../../../services/analytics/AiGatewayAnalyticsService';
+import { SecurityError } from '../../../shared/types/errors';
 
 import { UserAnalyticsResponseData, AgentAnalyticsResponseData } from './types';
 import { AnalyticsError } from '../../../services/analytics/types';
@@ -76,8 +77,8 @@ export class AnalyticsController extends BaseController {
 
 			if (error instanceof AnalyticsError) {
 				return AnalyticsController.createErrorResponse<UserAnalyticsResponseData>(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 
@@ -149,8 +150,8 @@ export class AnalyticsController extends BaseController {
 
 			if (error instanceof AnalyticsError) {
 				return AnalyticsController.createErrorResponse<AgentAnalyticsResponseData>(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 

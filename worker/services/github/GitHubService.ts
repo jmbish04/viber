@@ -148,7 +148,7 @@ export class GitHubService {
 			);
 			return {
 				success: false,
-				error: error instanceof Error ? error.message : 'Unknown error',
+				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
 			};
 		}
 	}
@@ -260,7 +260,7 @@ export class GitHubService {
 			};
 		} catch (error) {
 			const errorMessage =
-				error instanceof Error ? error.message : 'Unknown error';
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
 			GitHubService.logger.error('Failed to push files to GitHub', {
 				error: errorMessage,
 				repositoryUrl: request.repositoryHtmlUrl,

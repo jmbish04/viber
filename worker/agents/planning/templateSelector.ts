@@ -3,16 +3,16 @@ import {
 	createUserMessage,
 	createMultiModalUserMessage,
 } from '../inferutils/common';
-import { TemplateListResponse } from '../../services/sandbox/sandboxTypes';
+import { TemplateListResponse } from '../services/sandbox/sandboxTypes';
 import { createLogger } from '../../logger';
 import { executeInference } from '../inferutils/infer';
 import { InferenceContext } from '../inferutils/config.types';
-import { RateLimitExceededError, SecurityError } from 'shared/types/errors';
+import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
 import {
 	TemplateSelection,
 	TemplateSelectionSchema,
 } from '../../agents/schemas';
-import { generateSecureToken } from 'worker/utils/cryptoUtils';
+import { generateSecureToken } from '../../utils/cryptoUtils';
 import type { ImageAttachment } from '../../types/image-attachment';
 
 const logger = createLogger('TemplateSelector');

@@ -1407,7 +1407,7 @@ const router = createBrowserRouter([
 		} catch (error) {
 			failed++;
 			results.push(
-				`❌ ${test.name}: EXCEPTION - ${error instanceof Error ? error.message : String(error)}`,
+				`❌ ${test.name}: EXCEPTION - ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 			);
 		}
 	}

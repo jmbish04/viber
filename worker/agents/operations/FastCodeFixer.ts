@@ -4,7 +4,7 @@ import { PROMPT_UTILS } from '../prompts';
 import { AgentOperation, OperationOptions } from '../operations/common';
 import { FileOutputType, PhaseConceptType } from '../schemas';
 import { SCOFFormat } from '../output-formats/streaming-formats/scof';
-import { CodeIssue } from '../../services/sandbox/sandboxTypes';
+import { CodeIssue } from '../services/sandbox/sandboxTypes';
 import { CodeSerializerType } from '../utils/codeSerializers';
 
 export interface FastCodeFixerInputs {

@@ -35,7 +35,7 @@ export interface RealtimeCodeFixerContext {
 	template: TemplateDetails;
 }
 
-const SYSTEM_PROMPT = `You are a seasoned, highly experienced code inspection officer and senior full-stack engineer specializing in React and TypeScript. Your task is to review and verify if the provided TypeScript code file wouldn't cause any runtime infinite rendering loops or critical failures, and provide fixes if any. 
+const SYSTEM_PROMPT = `You are a seasoned, highly experienced code inspection officer and senior full-stack engineer specializing in React and TypeScript. Your task is to review and verify if the provided TypeScript code file wouldn't cause any runtime infinite rendering loops or critical failures, and provide fixes if any.
 You would only be provided with a single file to review at a time. You are to simulate its runtime behavior and analyze it for listed issues. Your analysis should be thorough but concise, focusing on critical issues and effective fixes.`;
 /*
 <previous_files>
@@ -143,7 +143,7 @@ Important reminders:
 - Assume internal imports (like shadcn components or ErrorBoundaries) exist.
 - Please ignore non functional or non critical issues. You are not doing a code quality check, You are performing code validation and issues that can cause runtime errors.
 - Pay extra attention to potential "Maximum update depth exceeded" errors, runtime error causing bugs, JSX/TSX Tag mismatches, logical issues and issues that can cause misalignment of UI components.
-- Do not suggest changes about stuff that you are not given context about, and might break downstream code. 
+- Do not suggest changes about stuff that you are not given context about, and might break downstream code.
 
 If no issues are found, return a blank response.
 
@@ -152,7 +152,7 @@ Your final output should consist only of the fixes formatted as shown, without d
 
 const EXTRA_JSX_SPECIFIC = `
 <appendix>
-The most important class of errors is the "Maximum update depth exceeded" error which you definitely need to identify and fix. 
+The most important class of errors is the "Maximum update depth exceeded" error which you definitely need to identify and fix.
 ${PROMPT_UTILS.REACT_RENDER_LOOP_PREVENTION}
 </appendix>
 `;
@@ -386,7 +386,7 @@ Don't be nitpicky, If there are no actual issues, just say "No issues found".
 				this.logger
 					.info(`Applied search replace diff to file: ${generatedFile.filePath}
 ================================================================================
-Raw content (pass ${i + 1}, found ${searchBlocks} search blocks): 
+Raw content (pass ${i + 1}, found ${searchBlocks} search blocks):
 ${content}
 -------------------------
 Diff:
@@ -396,7 +396,7 @@ ${fixResult.string}
 
 				this.logger.info(`
 -------------------------
-final content (pass ${i + 1}): 
+final content (pass ${i + 1}):
 ${content}
 ================================================================================
 `);

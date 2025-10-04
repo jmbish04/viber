@@ -12,7 +12,7 @@ import {
 	registerSchema,
 	oauthProviderSchema,
 } from './authSchemas';
-import { SecurityError } from 'shared/types/errors';
+import { SecurityError } from '../../../shared/types/errors';
 import {
 	formatAuthResponse,
 	mapUserResponse,
@@ -101,8 +101,8 @@ export class AuthController extends BaseController {
 		} catch (error) {
 			if (error instanceof SecurityError) {
 				return AuthController.createErrorResponse(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 
@@ -171,8 +171,8 @@ export class AuthController extends BaseController {
 		} catch (error) {
 			if (error instanceof SecurityError) {
 				return AuthController.createErrorResponse(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 
@@ -357,8 +357,8 @@ export class AuthController extends BaseController {
 
 			if (error instanceof SecurityError) {
 				return AuthController.createErrorResponse(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 
@@ -708,8 +708,8 @@ export class AuthController extends BaseController {
 		} catch (error) {
 			if (error instanceof SecurityError) {
 				return AuthController.createErrorResponse(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 
@@ -753,8 +753,8 @@ export class AuthController extends BaseController {
 		} catch (error) {
 			if (error instanceof SecurityError) {
 				return AuthController.createErrorResponse(
-					error.message,
-					error.statusCode,
+					error instanceof Error ? error.message : String(error),
+					error instanceof SecurityError ? error.statusCode : 500,
 				);
 			}
 

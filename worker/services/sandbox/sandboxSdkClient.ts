@@ -54,8 +54,8 @@ import { ResourceProvisioner } from './resourceProvisioner';
 import { TemplateParser } from './templateParser';
 import { ResourceProvisioningResult } from './types';
 import { GitHubService } from '../github/GitHubService';
-import { getPreviewDomain } from '../../utils/urls';
-import { isDev } from 'worker/utils/envs';
+import { getPreviewDomain } from '../utils/urls';
+import { isDev } from '../utils/envs';
 // Export the Sandbox class in your Worker
 export {
 	Sandbox as UserAppSandboxService,
@@ -206,7 +206,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			return metadata;
 		} catch (error) {
 			throw new Error(
-				`Failed to read instance metadata: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				`Failed to read instance metadata: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			);
 		}
 	}
@@ -426,7 +426,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			this.logger.error('getTemplateDetails', error, { templateName });
 			return {
 				success: false,
-				error: `Failed to get template details: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get template details: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -658,7 +658,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				success: false,
 				instances: [],
 				count: 0,
-				error: `Failed to list instances: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to list instances: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -850,7 +850,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				resourceProvisioner = new ResourceProvisioner(this.logger);
 			} catch (error) {
 				this.logger.warn(
-					`Cannot initialize resource provisioner: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					`Cannot initialize resource provisioner: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 				);
 				return {
 					success: true,
@@ -1140,7 +1140,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					instanceId,
 					error:
 						error instanceof Error
-							? error.message
+							? error instanceof Error ? error.message : String(error)
 							: 'Unknown error',
 				});
 				// Non-blocking - continue with setup
@@ -1254,7 +1254,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			donttouchFiles = JSON.parse(donttouchFile.content) as string[];
 		} catch (error) {
 			this.logger.warn(
-				`Failed to read .donttouch_files.json: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				`Failed to read .donttouch_files.json: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			);
 		}
 		return donttouchFiles;
@@ -1275,7 +1275,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			redactedFiles = JSON.parse(redactedFile.content) as string[];
 		} catch (error) {
 			this.logger.warn(
-				`Failed to read .redacted_files.json: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				`Failed to read .redacted_files.json: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			);
 		}
 		return redactedFiles;
@@ -1359,7 +1359,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			});
 			return {
 				success: false,
-				error: `Failed to create instance: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to create instance: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1408,7 +1408,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			this.logger.error('getInstanceDetails', error, { instanceId });
 			return {
 				success: false,
-				error: `Failed to get instance details: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get instance details: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1463,7 +1463,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				success: false,
 				pending: false,
 				isHealthy: false,
-				error: `Failed to get instance status: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get instance status: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1529,7 +1529,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			this.logger.error('shutdownInstance', error, { instanceId });
 			return {
 				success: false,
-				error: `Failed to shutdown instance: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to shutdown instance: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1633,7 +1633,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				this.logger.error('Git commit failed', {
 					error:
 						error instanceof Error
-							? error.message
+							? error instanceof Error ? error.message : String(error)
 							: 'Unknown error',
 				});
 			}
@@ -1652,7 +1652,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					success: false,
 					error: 'Instance error',
 				})),
-				error: `Failed to write files: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to write files: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1774,7 +1774,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			return {
 				success: false,
 				files: [],
-				error: `Failed to get files: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get files: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1806,7 +1806,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					stdout: '',
 					stderr: '',
 				},
-				error: `Failed to get logs: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get logs: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1869,7 +1869,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 						output: '',
 						error:
 							error instanceof Error
-								? error.message
+								? error instanceof Error ? error.message : String(error)
 								: 'Execution error',
 					});
 				}
@@ -1891,7 +1891,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					output: '',
 					error: 'Instance error',
 				})),
-				error: `Failed to execute commands: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to execute commands: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -1949,7 +1949,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				success: false,
 				errors: [],
 				hasErrors: false,
-				error: `Failed to get errors: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to get errors: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -2007,7 +2007,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			this.logger.error('clearInstanceErrors', error, { instanceId });
 			return {
 				success: false,
-				error: `Failed to clear errors: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to clear errors: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -2209,7 +2209,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 				success: false,
 				lint: { issues: [] },
 				typecheck: { issues: [] },
-				error: `Failed to run analysis: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to run analysis: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}
@@ -2249,7 +2249,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					}
 				} catch (error) {
 					this.logger.debug(
-						`Failed to fetch file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						`Failed to fetch file ${filePath}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 					);
 				}
 				return null;
@@ -2555,8 +2555,8 @@ export class SandboxSdkClient extends BaseSandboxService {
 			});
 			return {
 				success: false,
-				message: `Deployment failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-				error: error instanceof Error ? error.message : 'Unknown error',
+				message: `Deployment failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
 			};
 		}
 	}
@@ -2829,7 +2829,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			};
 		} catch (error) {
 			const errorMessage =
-				error instanceof Error ? error.message : 'Unknown error';
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
 			this.logger.error('GitHub export failed', {
 				instanceId,
 				error: errorMessage,
@@ -2921,7 +2921,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 					this.logger.error('Auto-commit failed', error);
 					return {
 						success: false,
-						error: `Failed to auto-commit changes: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						error: `Failed to auto-commit changes: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 					};
 				}
 			}
@@ -2968,7 +2968,7 @@ export class SandboxSdkClient extends BaseSandboxService {
 			});
 
 			const errorMessage =
-				error instanceof Error ? error.message : 'Unknown error';
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
 
 			return {
 				success: false,

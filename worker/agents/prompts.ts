@@ -87,7 +87,7 @@ Frameworks: ${template.frameworks?.join(', ')}
 Apart from these files, All SHADCN Components are present in ./src/components/ui/* and can be imported from there, example: import { Button } from "@/components/ui/button";
 **Please do not rewrite these components, just import them and use them**
 
-Template Usage Instructions: 
+Template Usage Instructions:
 ${template.description.usage}
 
 <DO NOT TOUCH FILES>
@@ -132,7 +132,7 @@ and provide a preview url for the application.
 				// Remove any trace lines with no 'tsx' or 'ts' extension in them
 				const cleanedText = errorText
 					.split('\n')
-					.map((line) =>
+					.map((line: string) =>
 						line.includes('deps/chunk') &&
 						!(line.includes('.tsx') || line.includes('.ts'))
 							? '...'
@@ -252,11 +252,11 @@ function Component({ data }) {
 function Component({ data }) {
     const [processed, setProcessed] = useState(null);
     const memoizedValue = useMemo(() => computedValue, [data]);
-    
+
     useEffect(() => {
         setProcessed(data.map(transform));
     }, [data]);
-    
+
     return <div>{memoizedValue}</div>;
 }
 \`\`\`
@@ -437,15 +437,15 @@ function Counter() {
 
 ## Quick Prevention Checklist: The Golden Rules
 
-✅ **Move state updates out of render body** - Only update state in useEffect hooks or event handlers  
-✅ **Provide dependency arrays to every useEffect** - Missing dependencies cause infinite loops  
-✅ **Make effect logic conditional** - Add guards like \`if (data.length > 0)\` to prevent re-triggering  
-✅ **Stabilize non-primitive dependencies** - Use useMemo and useCallback for objects/arrays/functions  
-✅ **Select primitives from stores** - \`useStore(s => s.score)\` not \`useStore(s => ({ score: s.score }))\`  
-✅ **Lift state up from recursive components** - Never initialize state inside recursive calls  
-✅ **Use functional updates** - \`setState(prev => prev + 1)\` avoids stale closures  
-✅ **Prefer refs for non-UI data** - \`useRef\` doesn't trigger re-renders when updated  
-✅ **Avoid prop→state mirrors** - Derive values directly or use proper synchronization  
+✅ **Move state updates out of render body** - Only update state in useEffect hooks or event handlers
+✅ **Provide dependency arrays to every useEffect** - Missing dependencies cause infinite loops
+✅ **Make effect logic conditional** - Add guards like \`if (data.length > 0)\` to prevent re-triggering
+✅ **Stabilize non-primitive dependencies** - Use useMemo and useCallback for objects/arrays/functions
+✅ **Select primitives from stores** - \`useStore(s => s.score)\` not \`useStore(s => ({ score: s.score }))\`
+✅ **Lift state up from recursive components** - Never initialize state inside recursive calls
+✅ **Use functional updates** - \`setState(prev => prev + 1)\` avoids stale closures
+✅ **Prefer refs for non-UI data** - \`useRef\` doesn't trigger re-renders when updated
+✅ **Avoid prop→state mirrors** - Derive values directly or use proper synchronization
 ✅ **Break parent↔child feedback loops** - Lift state or use idempotent callbacks
 
 \`\`\`tsx
@@ -491,7 +491,7 @@ const derivedValue = propValue.toUpperCase(); // No state needed
     4. **NO UNDEFINED VALUES/PROPERTIES/FUNCTIONS/COMPONENTS etc:** Ensure all variables, functions, and components are defined before use. Never use undefined values. If you use something that isn't already defined, you need to define it.
     5. **STATE UPDATE INTEGRITY:** Never call state setters directly during the render phase; all state updates must originate from event handlers or useEffect hooks to prevent infinite loops.
     6. **STATE SELECTOR STABILITY:** When using state management libraries (Zustand, Redux), always select primitive values individually. Never return a new object or array from a single selector, as this creates unstable references and will cause infinite render loops.
-    
+
     **UI/UX EXCELLENCE CRITICAL RULES:**
     7. **VISUAL HIERARCHY CLARITY:** Every interface must have clear visual hierarchy - never create pages with uniform text sizes or equal visual weight for all elements
     8. **INTERACTIVE FEEDBACK MANDATORY:** Every button, link, and interactive element MUST have visible hover, focus, and active states - no exceptions
@@ -507,7 +507,7 @@ const derivedValue = propValue.toUpperCase(); // No state needed
     •   **Performance:** Use React.memo, useMemo, useCallback to prevent unnecessary re-renders. Define event handlers outside render or use useCallback.
     •   **Object Literals**: NEVER duplicate property names. \`{name: "A", age: 25, name: "B"}\` = compilation error
     •   **Always follow best coding practices**: Follow best coding practices and principles:
-        - Always maximize code reuse and minimize code redundancy and duplicacy. 
+        - Always maximize code reuse and minimize code redundancy and duplicacy.
         - Strict DRY (Don't Repeat Yourself) principle.
         - Always try to import or extend existing types, components, functions, variables, etc. instead of redefining something similar.
 
@@ -552,7 +552,7 @@ const derivedValue = propValue.toUpperCase(); // No state needed
     **PRE-CODE VALIDATION CHECKLIST:**
     Before writing any code, mentally verify:
     - All imports use correct syntax and paths. Be cautious about named vs default imports wherever needed.
-    - All variables are defined before use  
+    - All variables are defined before use
     - No setState calls during render phase
     - No object-literal selectors in Zustand (avoid \`useStore((state) => ({ ... }))\`; select primitives individually)
     - All Tailwind classes exist in config
@@ -568,7 +568,7 @@ const derivedValue = propValue.toUpperCase(); // No state needed
     **BAD IMPORTS** (cause runtime errors):
     \`\`\`tsx
     import ReactFlow from '@xyflow/react';      // WRONG: ReactFlow is named export
-    import cn from '@/lib/utils';               // WRONG: cn is named export  
+    import cn from '@/lib/utils';               // WRONG: cn is named export
     import { Button } from 'shadcn/ui';         // WRONG: should be @/components/ui
     import { useState } from 'react';           // MISSING: React itself
     import { useRouter } from 'next/navigation'; // WRONG: use 'react-router-dom'
@@ -643,7 +643,7 @@ bun add @geist-ui/react@1
 \`\`\`
 </SETUP COMMANDS>
 `,
-	CODE_CONTENT_FORMAT: `<CODE CONTENT GENERATION RULES> 
+	CODE_CONTENT_FORMAT: `<CODE CONTENT GENERATION RULES>
     The generated content for any file should be one of the following formats: \`full_content\` or \`unified_diff\`.
 
     - **When working on an existing (previously generated) file and the scope of changes would be smaller than a unified diff, use \`unified_diff\` format.**
@@ -664,7 +664,7 @@ bun add @geist-ui/react@1
     <RULES FOR \`unified_diff\`>
         • **Content Format:** Provide the diff of the file. Do not escape or wrap the content in any way.
         • **Usage:** Use this format when working to modify an existing file and it would be smaller to represent the diff than the full content.
-        
+
         **Diff Format Rules:**
             • Return edits similar to diffs that \`diff -U0\` would produce.
             • Do not include the first 2 lines with the file paths.
@@ -717,11 +717,11 @@ bun add @geist-ui/react@1
 </CODE CONTENT GENERATION RULES>
 `,
 	UI_GUIDELINES: `## UI MASTERY & VISUAL EXCELLENCE STANDARDS
-    
+
     ### 🎨 VISUAL HIERARCHY MASTERY
     • **Typography Excellence:** Create stunning text hierarchies:
         - Headlines: text-4xl/5xl/6xl with font-bold for maximum impact
-        - Subheadings: text-2xl/3xl with font-semibold for clear structure  
+        - Subheadings: text-2xl/3xl with font-semibold for clear structure
         - Body: text-lg/base with font-medium for perfect readability
         - Captions: text-sm with font-normal for supporting details
         - **Color Psychology:** Use text-gray-900 for primary, text-gray-600 for secondary, text-gray-400 for tertiary
@@ -730,7 +730,7 @@ bun add @geist-ui/react@1
         - Content blocks: space-y-6 md:space-y-8 for related content
         - Element spacing: space-y-3 md:space-y-4 for tight groupings
         - **Golden Ratio:** Use 8px base unit (space-2) multiplied by fibonacci numbers (1,1,2,3,5,8,13...)
-    
+
     ### ✨ INTERACTIVE DESIGN EXCELLENCE
     • **Micro-Interactions:** Every interactive element must delight users:
         - **Hover States:** Subtle elevation (hover:shadow-lg), color shifts (hover:bg-blue-600), or scale (hover:scale-105)
@@ -743,7 +743,7 @@ bun add @geist-ui/react@1
         - **Secondary:** Subtle elegance (bg-gray-100 hover:bg-gray-200) with clear hierarchy
         - **Outline:** Clean borders (border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white)
         - **Danger:** Warning colors (bg-red-600 hover:bg-red-700) for destructive actions
-    
+
     ### 🏗️ LAYOUT ARCHITECTURE EXCELLENCE
     • **Container Strategies:** Build layouts that feel intentional:
         - **Content Width:** Use max-w-7xl mx-auto for main containers
@@ -757,7 +757,7 @@ bun add @geist-ui/react@1
         - **Navigation:** flex items-center justify-between for header layouts
         - **Cards:** flex flex-col justify-between for equal height card layouts
         - **Forms:** flex flex-col space-y-4 for clean form arrangements
-    
+
     ### 🎯 COMPONENT DESIGN EXCELLENCE
     • **Card Components:** Design cards that stand out beautifully:
         - **Elevation:** Use shadow-sm, shadow-md, shadow-lg strategically for visual depth
@@ -773,7 +773,7 @@ bun add @geist-ui/react@1
         - **Active States:** Clear indicators with color, background, or underline
         - **Breadcrumbs:** Subtle text-gray-500 with proper separators
         - **Mobile Menu:** Smooth slide-in animations with backdrop blur
-    
+
     ### 📱 RESPONSIVE DESIGN MASTERY
     • **Mobile-First Excellence:** Design for mobile, enhance for desktop:
         - **Touch Targets:** Minimum 44px touch targets for mobile usability
@@ -785,7 +785,7 @@ bun add @geist-ui/react@1
         - **lg (1024px):** Desktop layouts
         - **xl (1280px):** Large desktop enhancements
         - **2xl (1536px):** Ultra-wide optimizations
-    
+
     ### 🌟 VISUAL POLISH CHECKLIST
     **Before completing any component, ensure:**
     - ✅ **Visual Rhythm:** Consistent spacing that creates natural reading flow
@@ -916,7 +916,7 @@ export const STRATEGIES_UTILS = {
     **Make sure the primary (home) page is rendered correctly and as expected after each phase**
     **Make sure to overwrite the home page file**`,
 	CONSTRAINTS: `<PHASE GENERATION CONSTRAINTS>
-        **Focus on building the frontend and all the views/pages in the initial 1-2 phases with core functionality and mostly mock data, then fleshing out the application**    
+        **Focus on building the frontend and all the views/pages in the initial 1-2 phases with core functionality and mostly mock data, then fleshing out the application**
         **Before writing any components of your own, make sure to check the existing components and files in the template, try to use them if possible (for example preinstalled shadcn components)**
         **If auth functionality is required, provide mock auth functionality primarily. Provide real auth functionality ONLY IF template has persistence layer. Remember to seed the persistence layer with mock data AND Always PREFILL the UI with mock credentials. No oauth needed**
 
@@ -930,11 +930,11 @@ export const STRATEGIES_UTILS = {
         **DO NOT WRITE pdf files, images, or any other non-text files as they are not supported by the deployment.**
 
         **Examples**:
-            * Building any tic-tac-toe game: Has a single page, simple logic -> **Simple Project** - 1 phase and 1-2 files. Initial phase should yield a perfectly working game.        
+            * Building any tic-tac-toe game: Has a single page, simple logic -> **Simple Project** - 1 phase and 1-2 files. Initial phase should yield a perfectly working game.
             * Building any themed 2048 game: Has a single page, simple logic -> **Simple Project** - 1 phase and 2 files max. Initial phase should yield a perfectly working game.
             * Building a full chess platform: Has multiple pages -> **Complex Project** - 3-5 phases and 5-15 files, with initial phase having around 5-11 files and should have the primary homepage working with mockups for all other views.
             * Building a full e-commerce platform: Has multiple pages -> **Complex Project** - 3-5 phases and 5-15 files max, with initial phase having around 5-11 files and should have the primary homepage working with mockups for all other views.
-    
+
 
         <TRUST & SAFETY POLICIES>
         • **NEVER** provide any code that can be used to perform nefarious/malicious or against Cloudflare's policies.
@@ -1058,7 +1058,7 @@ ${runtimeErrorsText || 'No runtime errors detected'}
 ${staticAnalysisText}
 
 ## ANALYSIS INSTRUCTIONS
-- **PRIORITIZE** "Maximum update depth exceeded" and useEffect-related errors  
+- **PRIORITIZE** "Maximum update depth exceeded" and useEffect-related errors
 - **CROSS-REFERENCE** error messages with current code structure (line numbers may be outdated)
 - **VALIDATE** reported issues against actual code patterns before fixing
 - **FOCUS** on deployment-blocking runtime errors over linting issues`;
@@ -1211,7 +1211,7 @@ const ECOMM_INSTRUCTIONS = (): string => `
 const DASHBOARD_INSTRUCTIONS = (): string => `
 ** If applicable to user query group Related Controls and Forms into Well-Labeled Cards / Panels
 ** If applicable to user query offer Quick Actions / Shortcuts for Common Tasks
-** If user asked for analytics/visualizations/statistics - Show sparklines, mini line/bar charts, or simple pie indicators for trends 
+** If user asked for analytics/visualizations/statistics - Show sparklines, mini line/bar charts, or simple pie indicators for trends
 ** If user asked for analytics/visualizations/statistics - Maybe show key metrics in modular cards
 ** If applicable to user query make It Interactive and Contextual (Filters, Search, Pagination)
 ** If applicable to user query add a sidebar and or tabs

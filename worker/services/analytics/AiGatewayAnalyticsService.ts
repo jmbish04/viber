@@ -196,7 +196,7 @@ export class AiGatewayAnalyticsService {
 			if (data.errors && data.errors.length > 0) {
 				const error = data.errors[0];
 				throw new AnalyticsError(
-					error.message || 'GraphQL query failed',
+					error instanceof Error ? error.message : String(error) || 'GraphQL query failed',
 					error.extensions?.code || 'GRAPHQL_ERROR',
 					error.extensions?.code === 'authz' ? 403 : 500,
 				);
@@ -213,14 +213,14 @@ export class AiGatewayAnalyticsService {
 				return {
 					data: null,
 					responseTime,
-					error: error.message,
+					error: error instanceof Error ? error.message : String(error),
 				};
 			}
 
 			return {
 				data: null,
 				responseTime,
-				error: error instanceof Error ? error.message : String(error),
+				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error),
 			};
 		}
 	}

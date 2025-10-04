@@ -178,7 +178,7 @@ export function handleFixerError(
 	error: Error,
 	fixerName: string,
 ): UnfixableIssue {
-	return createUnfixableIssue(issue, `${fixerName} failed: ${error.message}`);
+	return createUnfixableIssue(issue, `${fixerName} failed: ${error instanceof Error ? error.message : String(error)}`);
 }
 
 /**

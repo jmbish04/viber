@@ -63,8 +63,8 @@ import { looksLikeCommand } from '../utils/common';
 import { generateBlueprint } from '../planning/blueprint';
 import { prepareCloudflareButton } from '../../utils/deployToCf';
 import { AppService } from '../../database';
-import { RateLimitExceededError } from 'shared/types/errors';
-import { generateId } from 'worker/utils/idGenerator';
+import { RateLimitExceededError } from '../../../shared/types/errors';
+import { generateId } from '../../utils/idGenerator';
 import type { ImageAttachment } from '../../types/image-attachment';
 
 interface WebhookPayload {
@@ -368,7 +368,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		});
 
 		const packageJsonFile = templateInfo.templateDetails?.files.find(
-			(file) => file.filePath === 'package.json',
+			(file: any) => file.filePath === 'package.json',
 		);
 		const packageJson = packageJsonFile ? packageJsonFile.fileContents : '';
 
@@ -405,13 +405,13 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				.catch((error) => {
 					this.logger().error('Error during deployment:', error);
 					this.broadcast(WebSocketMessageResponses.ERROR, {
-						error: `Error during deployment: ${error instanceof Error ? error.message : String(error)}`,
+						error: `Error during deployment: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 					});
 				});
 		} catch (error) {
 			this.logger().error('Error during deployment:', error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error during deployment: ${error instanceof Error ? error.message : String(error)}`,
+				error: `Error during deployment: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 			});
 		}
 		this.logger().info(
@@ -437,7 +437,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error setting state:', error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error setting state: ${error instanceof Error ? error.message : String(error)}; Original state: ${JSON.stringify(this.state, null, 2)}; New state: ${JSON.stringify(state, null, 2)}`,
+				error: `Error setting state: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}; Original state: ${JSON.stringify(this.state, null, 2)}; New state: ${JSON.stringify(state, null, 2)}`,
 			});
 		}
 	}
@@ -640,7 +640,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				});
 			}
 			const errorMessage =
-				error instanceof Error ? error.message : String(error);
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
 				error: `Error during generation: ${errorMessage}`,
 			});
@@ -1479,7 +1479,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		let migratedTemplateDetails = this.state.templateDetails;
 		if (migratedTemplateDetails?.files) {
 			const migratedTemplateFiles = migratedTemplateDetails.files.map(
-				(file) => {
+				(file: any) => {
 					const migratedFile = migrateFile(file);
 					if (migratedFile !== file) {
 						needsMigration = true;
@@ -1690,7 +1690,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 
 			if (
 				errors.filter((error) =>
-					error.message.includes(
+					error instanceof Error ? error.message : String(error).includes(
 						'Unterminated string in JSON at position',
 					),
 				).length > 0
@@ -1800,7 +1800,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error linting code:', error);
 			const errorMessage =
-				error instanceof Error ? error.message : String(error);
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
 				error: `Failed to lint code: ${errorMessage}`,
 			});
@@ -1846,7 +1846,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 	//         this.logger().info(`Fast smart code fixes applied in ${Date.now() - startTime}ms`);
 	//     } catch (error) {
 	//         this.logger().error("Error applying fast smart code fixes:", error);
-	//         const errorMessage = error instanceof Error ? error.message : String(error);
+	//         const errorMessage = error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
 	//         this.broadcast(WebSocketMessageResponses.ERROR, { error: `Failed to apply fast smart code fixes: ${errorMessage}` });
 	//         return;
 	//     }
@@ -1904,7 +1904,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 					}
 				} catch (error) {
 					this.logger().debug(
-						`Failed to fetch file ${filePath}: ${error instanceof Error ? error.message : 'Unknown error'}`,
+						`Failed to fetch file ${filePath}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 					);
 				}
 				return null;
@@ -1995,7 +1995,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				error,
 			);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Deterministic code fixer failed: ${error instanceof Error ? error.message : String(error)}`,
+				error: `Deterministic code fixer failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 			});
 		}
 		// return undefined;
@@ -2190,10 +2190,12 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 						// because usually LLMs will only generate install commands or rm commands.
 						// This is to handle the bug still present in a lot of apps because of an exponential growth of commands
 					}
-					this.getSandboxServiceClient().executeCommands(
-						sandboxInstanceId,
-						cmds,
-					);
+					if (sandboxInstanceId) {
+						this.getSandboxServiceClient().executeCommands(
+							sandboxInstanceId,
+							cmds,
+						);
+					}
 					this.broadcast(
 						WebSocketMessageResponses.COMMAND_EXECUTING,
 						{
@@ -2234,12 +2236,12 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 							fileContents: file.fileContents,
 						}));
 
-			if (filesToWrite.length > 0) {
+			if (filesToWrite.length > 0 && sandboxInstanceId) {
 				const writeResponse =
 					await this.getSandboxServiceClient().writeFiles(
 						sandboxInstanceId,
 						filesToWrite,
-						commitMessage,
+						commitMessage || 'Update files',
 					);
 				if (!writeResponse || !writeResponse.success) {
 					this.logger().error(
@@ -2266,7 +2268,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error deploying to sandbox service:', error);
 			const errorMsg =
-				error instanceof Error ? error.message : String(error);
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
 			if (
 				errorMsg.includes('Network connection lost') ||
 				errorMsg.includes('Container service disconnected') ||
@@ -2461,10 +2463,10 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			this.broadcast(
 				WebSocketMessageResponses.CLOUDFLARE_DEPLOYMENT_ERROR,
 				{
-					message: `Deployment failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+					message: `Deployment failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 					error:
 						error instanceof Error
-							? error.message
+							? error instanceof Error ? error.message : String(error)
 							: 'Unknown error',
 				},
 			);
@@ -2627,7 +2629,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			return;
 		}
 		this.logger().info('Processing runtime error webhook', {
-			errorMessage: event.payload.error.message,
+			errorMessage: event.payload.error instanceof Error ? event.payload.error.message : String(event.payload.error),
 			runId: event.payload.runId,
 			instanceId: event.instanceId,
 		});
@@ -2998,8 +3000,8 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('GitHub export failed', error);
 			this.broadcast(WebSocketMessageResponses.GITHUB_EXPORT_ERROR, {
-				message: `GitHub export failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-				error: error instanceof Error ? error.message : 'Unknown error',
+				message: `GitHub export failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
 			});
 			return { success: false, repositoryUrl: options.repositoryHtmlUrl };
 		}
@@ -3119,12 +3121,12 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			if (error instanceof RateLimitExceededError) {
 				this.broadcast(
 					WebSocketMessageResponses.RATE_LIMIT_ERROR,
-					error,
+					{ error },
 				);
 				return;
 			}
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error processing user input: ${error instanceof Error ? error.message : String(error)}`,
+				error: `Error processing user input: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 			});
 		}
 	}
@@ -3329,7 +3331,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 
 			// Only broadcast if error wasn't already broadcast above
 			const errorMessage =
-				error instanceof Error ? error.message : 'Unknown error';
+				error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
 			if (
 				!errorMessage.includes('Browser Rendering API') &&
 				!errorMessage.includes('Database update failed')
@@ -3345,7 +3347,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			}
 
 			throw new Error(
-				`Screenshot capture failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				`Screenshot capture failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			);
 		}
 	}
@@ -3532,7 +3534,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			this.logger().error('Error executing terminal command:', error);
 
 			const errorMessage = {
-				output: `Error: ${error instanceof Error ? error.message : String(error)}`,
+				output: `Error: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
 				outputType: 'stderr' as const,
 				timestamp: Date.now(),
 			};

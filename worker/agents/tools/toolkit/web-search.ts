@@ -123,7 +123,7 @@ async function performWebSearch(
 		return formatSearchResults(data, query, numResults);
 	} catch (error) {
 		const isTimeout =
-			error instanceof Error && error.message.includes('timeout');
+			error instanceof Error && error instanceof Error ? error.message : String(error).includes('timeout');
 		const fallback = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 		return `Search failed: ${isTimeout ? 'timeout' : 'API error'}. Try: ${fallback}`;
 	}
@@ -189,7 +189,7 @@ async function fetchWebContent(url: string): Promise<string> {
 			: `No readable content found at ${url}`;
 	} catch (error) {
 		throw new Error(
-			`Failed to fetch: ${error instanceof Error ? error.message : 'Unknown error'}`,
+			`Failed to fetch: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 		);
 	}
 }

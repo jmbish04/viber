@@ -6,7 +6,7 @@ import {
 import type { StructuredLogger } from '../../../logger';
 import { TemplateDetails } from '../../../services/sandbox/sandboxTypes';
 import { applyUnifiedDiff } from '../../output-formats/diff-formats';
-import { FileState } from 'worker/agents/core/state';
+import { FileState } from '../../core/state';
 
 /**
  * File processing utilities

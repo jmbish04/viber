@@ -12,7 +12,7 @@ import { PasswordService } from '../../utils/passwordService';
 import { GoogleOAuthProvider } from '../../services/oauth/google';
 import { GitHubOAuthProvider } from '../../services/oauth/github';
 import { BaseOAuthProvider } from '../../services/oauth/base';
-import { SecurityError, SecurityErrorType } from 'shared/types/errors';
+import { SecurityError, SecurityErrorType } from '../../../shared/types/errors';
 import {
 	AuthResult,
 	AuthUserSession,

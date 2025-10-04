@@ -69,7 +69,7 @@ async function handleUserAppRequest(
 	} catch (error: any) {
 		// This block catches errors if the binding doesn't exist or if worker.fetch() fails.
 		logger.warn(
-			`Error dispatching to worker '${appName}': ${error.message}`,
+			`Error dispatching to worker '${appName}': ${error instanceof Error ? error.message : String(error)}`,
 		);
 		return new Response(
 			'An error occurred while loading this application.',

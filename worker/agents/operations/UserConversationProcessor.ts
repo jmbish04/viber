@@ -12,13 +12,13 @@ import { AgentOperation, OperationOptions } from '../operations/common';
 import { ConversationMessage } from '../inferutils/common';
 import { StructuredLogger } from '../../logger';
 import { IdGenerator } from '../utils/idGenerator';
-import { RateLimitExceededError, SecurityError } from 'shared/types/errors';
+import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
 import type { ImageAttachment } from '../../types/image-attachment';
 import { toolWebSearchDefinition } from '../tools/toolkit/web-search';
 import { toolWeatherDefinition } from '../tools/toolkit/weather';
 import { ToolDefinition } from '../tools/types';
 import { PROMPT_UTILS } from '../prompts';
-import { RuntimeError } from 'worker/services/sandbox/sandboxTypes';
+import { RuntimeError } from '../services/sandbox/sandboxTypes';
 import { CodeSerializerType } from '../utils/codeSerializers';
 
 // Constants

@@ -3,7 +3,7 @@
  */
 
 import { RateLimitError } from '../services/rate-limit/errors';
-import { SecurityError, SecurityErrorType } from 'shared/types/errors';
+import { SecurityError, SecurityErrorType } from '../../../shared/types/errors';
 /**
  * Standard response shape for all API endpoints
  */
@@ -57,7 +57,7 @@ export function errorResponse(
 	message?: string,
 ): Response {
 	let errorResp: ErrorResponse = {
-		message: error instanceof Error ? error.message : error,
+		message: error instanceof Error ? error instanceof Error ? error.message : String(error) : error,
 		name: error instanceof Error ? error.name : 'Error',
 	};
 	if (error instanceof SecurityError) {
@@ -71,7 +71,7 @@ export function errorResponse(
 		error: errorResp,
 		message:
 			message ||
-			(error instanceof Error ? error.message : 'An error occurred'),
+			(error instanceof Error ? error instanceof Error ? error.message : String(error) : 'An error occurred'),
 	};
 
 	return new Response(JSON.stringify(responseBody), {

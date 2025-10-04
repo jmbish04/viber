@@ -17,7 +17,7 @@ import {
 } from './config.types';
 import { AGENT_CONFIG } from './config';
 import { createLogger } from '../../logger';
-import { RateLimitExceededError, SecurityError } from 'shared/types/errors';
+import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
 import { ToolDefinition } from '../tools/types';
 
 const logger = createLogger('InferenceUtils');

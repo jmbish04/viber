@@ -401,7 +401,7 @@ export function useChat({
 				);
 			}
 		},
-		[retryCount, maxRetries, retryTimeouts],
+		[handleConnectionFailure, urlChatId, sendMessage, handleWebSocketMessage],
 	);
 
 	// Handle connection failures with exponential backoff retry
@@ -459,7 +459,14 @@ export function useChat({
 				'WebSocket Resilience',
 			);
 		},
-		[maxRetries, retryCount, retryTimeouts, onDebugMessage, sendMessage],
+		[
+			connectWithRetry,
+			maxRetries,
+			retryCount,
+			retryTimeouts,
+			onDebugMessage,
+			sendMessage,
+		],
 	);
 
 	// No legacy wrapper; call connectWithRetry directly
@@ -511,7 +518,16 @@ export function useChat({
 						isThinking: true,
 					});
 
-					for await (const obj of ndjsonStream(response.stream)) {
+					type StreamedObject = {
+						chunk?: string;
+						agentId?: string;
+						websocketUrl?: string;
+						template?: { files: FileType[] };
+					};
+
+					for await (const obj of ndjsonStream<StreamedObject>(
+						response.stream,
+					)) {
 						logger.debug('Received chunk from server:', obj);
 						if (obj.chunk) {
 							if (!startedBlueprintStream) {
@@ -631,7 +647,16 @@ export function useChat({
 			}
 		}
 		init();
-	}, []);
+	}, [
+		agentMode,
+		connectWithRetry,
+		userQuery,
+		userImages,
+		urlChatId,
+		sendMessage,
+		updateStage,
+		onDebugMessage,
+	]);
 
 	// Mount/unmount: enable/disable reconnection and clear pending retries
 	useEffect(() => {

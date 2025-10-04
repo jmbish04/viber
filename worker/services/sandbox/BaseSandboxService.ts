@@ -110,7 +110,7 @@ export abstract class BaseSandboxService {
 				success: false,
 				templates: [],
 				count: 0,
-				error: `Failed to fetch templates: ${error instanceof Error ? error.message : 'Unknown error'}`,
+				error: `Failed to fetch templates: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
 			};
 		}
 	}

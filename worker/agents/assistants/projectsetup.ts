@@ -129,8 +129,8 @@ export class ProjectSetupAssistant extends Assistant<Env> {
 				);
 				userPrompt =
 					createUserMessage(`Some of the previous commands you generated might not have worked. Please review these and generate new commands if required, maybe try a different version or correct the name?
-If the package simply doesn't exist, please don't suggest it. 
-                    
+If the package simply doesn't exist, please don't suggest it.
+
 ${error}`);
 				this.logger.info(
 					`Regenerating setup commands with new prompt: ${userPrompt.content}`,
