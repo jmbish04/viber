@@ -40,9 +40,14 @@ export class MCPManager {
 						capabilities: {},
 					},
 				);
-                logger.info(`Connecting to MCP server ${serverConfig.name}, ${serverConfig.sseUrl}`);
-				await client.connect(transport, {timeout: 500, maxTotalTimeout: 500});
-                logger.info(`Connected to MCP server ${serverConfig.name}`);
+				logger.info(
+					`Connecting to MCP server ${serverConfig.name}, ${serverConfig.sseUrl}`,
+				);
+				await client.connect(transport, {
+					timeout: 500,
+					maxTotalTimeout: 500,
+				});
+				logger.info(`Connected to MCP server ${serverConfig.name}`);
 				this.clients.set(serverConfig.name, client);
 
 				const toolsResult = await client.listTools();

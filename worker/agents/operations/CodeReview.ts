@@ -1,15 +1,23 @@
-import { CodeReviewOutputType, CodeReviewOutput , FileOutputSchema } from '../schemas';
+import {
+	CodeReviewOutputType,
+	CodeReviewOutput,
+	FileOutputSchema,
+} from '../schemas';
 import { GenerationContext } from '../domain/values/GenerationContext';
 import { IssueReport } from '../domain/values/IssueReport';
 import { createSystemMessage, createUserMessage } from '../inferutils/common';
 import { executeInference } from '../inferutils/infer';
-import { generalSystemPromptBuilder, issuesPromptFormatter, PROMPT_UTILS } from '../prompts';
+import {
+	generalSystemPromptBuilder,
+	issuesPromptFormatter,
+	PROMPT_UTILS,
+} from '../prompts';
 import { TemplateRegistry } from '../inferutils/schemaFormatters';
 import { z } from 'zod';
 import { AgentOperation, OperationOptions } from '../operations/common';
 
 export interface CodeReviewInputs {
-    issues: IssueReport
+	issues: IssueReport;
 }
 
 const SYSTEM_PROMPT = `You are a Senior Software Engineer at Cloudflare specializing in comprehensive React application analysis. Your mandate is to identify ALL critical issues across the ENTIRE codebase that could impact functionality, user experience, or deployment.
@@ -168,82 +176,101 @@ For each file with issues, provide:
 </ANALYSIS_INSTRUCTIONS>`;
 
 const userPromptFormatter = (issues: IssueReport, context: string) => {
-    const prompt = USER_PROMPT
-        .replaceAll('{{issues}}', issuesPromptFormatter(issues))
-        .replaceAll('{{context}}', context);
-    return PROMPT_UTILS.verifyPrompt(prompt);
-}
+	const prompt = USER_PROMPT.replaceAll(
+		'{{issues}}',
+		issuesPromptFormatter(issues),
+	).replaceAll('{{context}}', context);
+	return PROMPT_UTILS.verifyPrompt(prompt);
+};
 
-export class CodeReviewOperation extends AgentOperation<CodeReviewInputs, CodeReviewOutputType> {
-    async execute(
-        inputs: CodeReviewInputs,
-        options: OperationOptions
-    ): Promise<CodeReviewOutputType> {
-        const { issues } = inputs;
-        const { env, logger, context } = options;
-        
-        logger.info("Performing code review");
-        logger.info("Running static code analysis via linting...");
+export class CodeReviewOperation extends AgentOperation<
+	CodeReviewInputs,
+	CodeReviewOutputType
+> {
+	async execute(
+		inputs: CodeReviewInputs,
+		options: OperationOptions,
+	): Promise<CodeReviewOutputType> {
+		const { issues } = inputs;
+		const { env, logger, context } = options;
 
-        // Log all types of issues for comprehensive analysis
-        if (issues.runtimeErrors.length > 0) {
-            logger.info(`Found ${issues.runtimeErrors.length} runtime errors: ${issues.runtimeErrors.map(e => e.message).join(', ')}`);
-        }
-        if (issues.staticAnalysis.lint.issues.length > 0) {
-            logger.info(`Found ${issues.staticAnalysis.lint.issues.length} lint issues`);
-        }
-        if (issues.staticAnalysis.typecheck.issues.length > 0) {
-            logger.info(`Found ${issues.staticAnalysis.typecheck.issues.length} typecheck issues`);
-        }
-        
-        logger.info("Performing comprehensive codebase analysis for all issue types (runtime, logic, UI, state management, incomplete features)");
+		logger.info('Performing code review');
+		logger.info('Running static code analysis via linting...');
 
-        // Get files context
-        const filesContext = getFilesContext(context);
+		// Log all types of issues for comprehensive analysis
+		if (issues.runtimeErrors.length > 0) {
+			logger.info(
+				`Found ${issues.runtimeErrors.length} runtime errors: ${issues.runtimeErrors.map((e) => e.message).join(', ')}`,
+			);
+		}
+		if (issues.staticAnalysis.lint.issues.length > 0) {
+			logger.info(
+				`Found ${issues.staticAnalysis.lint.issues.length} lint issues`,
+			);
+		}
+		if (issues.staticAnalysis.typecheck.issues.length > 0) {
+			logger.info(
+				`Found ${issues.staticAnalysis.typecheck.issues.length} typecheck issues`,
+			);
+		}
 
-        const messages = [
-            createSystemMessage(generalSystemPromptBuilder(SYSTEM_PROMPT, {
-                query: context.query,
-                blueprint: context.blueprint,
-                templateDetails: context.templateDetails,
-                dependencies: context.dependencies,
-            })),
-            createUserMessage(userPromptFormatter(issues, filesContext)),
-        ];
+		logger.info(
+			'Performing comprehensive codebase analysis for all issue types (runtime, logic, UI, state management, incomplete features)',
+		);
 
-        try {
-            const { object: reviewResult } = await executeInference({
-                env: env,
-                messages,
-                schema: CodeReviewOutput,
-                agentActionName: "codeReview",
-                context: options.inferenceContext,
-                reasoning_effort: issues.runtimeErrors.length || issues.staticAnalysis.lint.issues.length || issues.staticAnalysis.typecheck.issues.length > 0 ? undefined : 'low',
-                // format: 'markdown'
-            });
+		// Get files context
+		const filesContext = getFilesContext(context);
 
-            if (!reviewResult) {
-                throw new Error("Failed to get code review result");
-            }
-            return reviewResult;
-        } catch (error) {
-            logger.error("Error during code review:", error);
-            throw error;
-        }
-    }
+		const messages = [
+			createSystemMessage(
+				generalSystemPromptBuilder(SYSTEM_PROMPT, {
+					query: context.query,
+					blueprint: context.blueprint,
+					templateDetails: context.templateDetails,
+					dependencies: context.dependencies,
+				}),
+			),
+			createUserMessage(userPromptFormatter(issues, filesContext)),
+		];
+
+		try {
+			const { object: reviewResult } = await executeInference({
+				env: env,
+				messages,
+				schema: CodeReviewOutput,
+				agentActionName: 'codeReview',
+				context: options.inferenceContext,
+				reasoning_effort:
+					issues.runtimeErrors.length ||
+					issues.staticAnalysis.lint.issues.length ||
+					issues.staticAnalysis.typecheck.issues.length > 0
+						? undefined
+						: 'low',
+				// format: 'markdown'
+			});
+
+			if (!reviewResult) {
+				throw new Error('Failed to get code review result');
+			}
+			return reviewResult;
+		} catch (error) {
+			logger.error('Error during code review:', error);
+			throw error;
+		}
+	}
 }
 
 /**
  * Get files context for review
  */
 function getFilesContext(context: GenerationContext): string {
-    const files = context.allFiles;
-    const filesObject = { files };
+	const files = context.allFiles;
+	const filesObject = { files };
 
-    return TemplateRegistry.markdown.serialize(
-        filesObject,
-        z.object({
-            files: z.array(FileOutputSchema)
-        })
-    );
+	return TemplateRegistry.markdown.serialize(
+		filesObject,
+		z.object({
+			files: z.array(FileOutputSchema),
+		}),
+	);
 }

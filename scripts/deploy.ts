@@ -42,11 +42,13 @@ interface WranglerConfig {
 		class_name: string;
 		image: string;
 		max_instances: number;
-		instance_type?: {
-			vcpu: number;
-			memory_mib: number;
-			disk_mb?: number;
-		} | string;
+		instance_type?:
+			| {
+					vcpu: number;
+					memory_mib: number;
+					disk_mb?: number;
+			  }
+			| string;
 		rollout_step_percentage?: number;
 	}>;
 	d1_databases?: Array<{
@@ -59,7 +61,7 @@ interface WranglerConfig {
 	routes?: Array<{
 		pattern: string;
 		custom_domain: boolean;
-        zone_id?: string;
+		zone_id?: string;
 	}>;
 	vars?: {
 		TEMPLATES_REPOSITORY?: string;
@@ -106,7 +108,7 @@ class CloudflareDeploymentManager {
 		this.cloudflare = new Cloudflare({
 			apiToken: this.env.CLOUDFLARE_API_TOKEN,
 		});
-		
+
 		// Set up signal handling for graceful cleanup
 		this.setupSignalHandlers();
 	}
@@ -118,29 +120,35 @@ class CloudflareDeploymentManager {
 	private setupSignalHandlers(): void {
 		const gracefulExit = async (signal: string) => {
 			console.log(`\n🛑 Received ${signal}, performing cleanup...`);
-			
+
 			try {
 				// Restore conflicting vars using existing restoration method
 				if (this.conflictingVarsForCleanup) {
-					console.log('🔄 Restoring original wrangler.jsonc configuration...');
-					await this.restoreOriginalVars(this.conflictingVarsForCleanup);
+					console.log(
+						'🔄 Restoring original wrangler.jsonc configuration...',
+					);
+					await this.restoreOriginalVars(
+						this.conflictingVarsForCleanup,
+					);
 				} else {
 					console.log('ℹ️  No configuration changes to restore');
 				}
 			} catch (error) {
-				console.error(`❌ Error during cleanup: ${error instanceof Error ? error.message : String(error)}`);
+				console.error(
+					`❌ Error during cleanup: ${error instanceof Error ? error.message : String(error)}`,
+				);
 			}
-			
+
 			console.log('👋 Cleanup completed. Exiting...');
 			process.exit(1);
 		};
 
 		// Handle Ctrl+C (SIGINT)
 		process.on('SIGINT', () => gracefulExit('SIGINT'));
-		
+
 		// Handle termination (SIGTERM)
 		process.on('SIGTERM', () => gracefulExit('SIGTERM'));
-		
+
 		console.log('✅ Signal handlers registered for graceful cleanup');
 	}
 
@@ -163,7 +171,6 @@ class CloudflareDeploymentManager {
 		console.log('✅ Build variables validation passed');
 	}
 
-
 	/**
 	 * Extracts and validates key configuration values from wrangler.jsonc
 	 */
@@ -184,7 +191,9 @@ class CloudflareDeploymentManager {
 		console.log('📊 Configuration Summary:');
 		console.log(`   Database Name: ${databaseName || 'Not configured'}`);
 		console.log(`   Custom Domain: ${customDomain || 'Not configured'}`);
-		console.log(`   Custom Preview Domain: ${customPreviewDomain || 'Not configured'}`);
+		console.log(
+			`   Custom Preview Domain: ${customPreviewDomain || 'Not configured'}`,
+		);
 		console.log(
 			`   Max Sandbox Instances: ${maxInstances || 'Not configured'}`,
 		);
@@ -192,7 +201,9 @@ class CloudflareDeploymentManager {
 			`   Templates Repository: ${templatesRepo || 'Not configured'}`,
 		);
 		console.log(`   AI Gateway: ${aiGateway || 'Not configured'}`);
-		console.log(`   Dispatch Namespace: ${dispatchNamespace || 'Not configured'}`);
+		console.log(
+			`   Dispatch Namespace: ${dispatchNamespace || 'Not configured'}`,
+		);
 
 		// Validate critical configuration
 		if (!databaseName) {
@@ -219,7 +230,9 @@ class CloudflareDeploymentManager {
 		if (!existsSync(wranglerPath)) {
 			throw new DeploymentError(
 				'wrangler.jsonc not found',
-				new Error('Please ensure wrangler.jsonc exists in the project root'),
+				new Error(
+					'Please ensure wrangler.jsonc exists in the project root',
+				),
 			);
 		}
 
@@ -230,7 +243,11 @@ class CloudflareDeploymentManager {
 		} catch (error) {
 			throw new DeploymentError(
 				'Failed to parse wrangler.jsonc',
-				error instanceof Error ? error : new Error(`Please check your wrangler.jsonc syntax: ${String(error)}`),
+				error instanceof Error
+					? error
+					: new Error(
+							`Please check your wrangler.jsonc syntax: ${String(error)}`,
+						),
 			);
 		}
 	}
@@ -240,8 +257,9 @@ class CloudflareDeploymentManager {
 	 */
 	private getEnvironmentVariables(): EnvironmentConfig {
 		const apiToken = process.env.CLOUDFLARE_API_TOKEN!;
-		const aiGatewayToken = process.env.CLOUDFLARE_AI_GATEWAY_TOKEN || apiToken;
-		
+		const aiGatewayToken =
+			process.env.CLOUDFLARE_AI_GATEWAY_TOKEN || apiToken;
+
 		return {
 			CLOUDFLARE_API_TOKEN: apiToken,
 			CLOUDFLARE_ACCOUNT_ID:
@@ -252,7 +270,8 @@ class CloudflareDeploymentManager {
 				this.config.vars?.TEMPLATES_REPOSITORY!,
 			CLOUDFLARE_AI_GATEWAY:
 				process.env.CLOUDFLARE_AI_GATEWAY ||
-				this.config.vars?.CLOUDFLARE_AI_GATEWAY || "orange-build-gateway",
+				this.config.vars?.CLOUDFLARE_AI_GATEWAY ||
+				'orange-build-gateway',
 			CLOUDFLARE_AI_GATEWAY_TOKEN: aiGatewayToken,
 		};
 	}
@@ -263,7 +282,9 @@ class CloudflareDeploymentManager {
 	private async ensureDispatchNamespace(): Promise<void> {
 		const dispatchConfig = this.config.dispatch_namespaces?.[0];
 		if (!dispatchConfig) {
-			console.log('ℹ️  No dispatch namespace configuration found, skipping setup');
+			console.log(
+				'ℹ️  No dispatch namespace configuration found, skipping setup',
+			);
 			return;
 		}
 
@@ -284,10 +305,18 @@ class CloudflareDeploymentManager {
 			} catch (error: any) {
 				// Check if error indicates dispatch namespaces are not available
 				const errorMessage = error?.message || '';
-				if (errorMessage.includes('You do not have access to dispatch namespaces') || 
-					errorMessage.includes('code: 10121')) {
-					console.log('⚠️  Dispatch namespaces became unavailable during execution');
-					console.log('   Workers for Platforms access may have changed');
+				if (
+					errorMessage.includes(
+						'You do not have access to dispatch namespaces',
+					) ||
+					errorMessage.includes('code: 10121')
+				) {
+					console.log(
+						'⚠️  Dispatch namespaces became unavailable during execution',
+					);
+					console.log(
+						'   Workers for Platforms access may have changed',
+					);
 					return;
 				}
 
@@ -315,11 +344,20 @@ class CloudflareDeploymentManager {
 			);
 		} catch (error) {
 			// Check if the error is related to dispatch namespace access
-			const errorMessage = error instanceof Error ? error.message : String(error);
-			if (errorMessage.includes('You do not have access to dispatch namespaces') || 
-				errorMessage.includes('code: 10121')) {
-				console.warn('⚠️  Dispatch namespaces are not available for this account');
-				console.warn('   Skipping dispatch namespace setup and continuing deployment');
+			const errorMessage =
+				error instanceof Error ? error.message : String(error);
+			if (
+				errorMessage.includes(
+					'You do not have access to dispatch namespaces',
+				) ||
+				errorMessage.includes('code: 10121')
+			) {
+				console.warn(
+					'⚠️  Dispatch namespaces are not available for this account',
+				);
+				console.warn(
+					'   Skipping dispatch namespace setup and continuing deployment',
+				);
 				return;
 			}
 
@@ -664,9 +702,11 @@ class CloudflareDeploymentManager {
 	 */
 	private cleanDockerfileForDeployment(): string | null {
 		const dockerfilePath = join(PROJECT_ROOT, 'SandboxDockerfile');
-		
+
 		if (!existsSync(dockerfilePath)) {
-			console.log('     ℹ️  SandboxDockerfile not found - skipping ARM64 cleanup');
+			console.log(
+				'     ℹ️  SandboxDockerfile not found - skipping ARM64 cleanup',
+			);
 			return null;
 		}
 
@@ -676,9 +716,11 @@ class CloudflareDeploymentManager {
 
 			// Split content into lines for processing
 			const lines = originalContent.split('\n');
-			const cleanedLines = lines.map(line => {
+			const cleanedLines = lines.map((line) => {
 				// Look for FROM statements with --platform=linux/arm64 and remove the flag
-				const fromMatch = line.match(/^(\s*FROM\s+)--platform=linux\/arm64\s+(.*)/);
+				const fromMatch = line.match(
+					/^(\s*FROM\s+)--platform=linux\/arm64\s+(.*)/,
+				);
 				if (fromMatch) {
 					modified = true;
 					const [, prefix, image] = fromMatch;
@@ -689,18 +731,23 @@ class CloudflareDeploymentManager {
 
 			if (modified) {
 				writeFileSync(dockerfilePath, cleanedLines.join('\n'), 'utf-8');
-				console.log('     ✅ Removed ARM64 platform flags from SandboxDockerfile');
+				console.log(
+					'     ✅ Removed ARM64 platform flags from SandboxDockerfile',
+				);
 				return originalContent; // Return original for restoration
 			} else {
-				console.log('     ✅ No ARM64 platform flags found in SandboxDockerfile');
+				console.log(
+					'     ✅ No ARM64 platform flags found in SandboxDockerfile',
+				);
 				return null; // Nothing to restore
 			}
-			
 		} catch (error) {
 			console.warn(
 				`     ⚠️  Could not clean SandboxDockerfile: ${error instanceof Error ? error.message : String(error)}`,
 			);
-			console.warn('     → Continuing deployment, but may encounter platform compatibility issues');
+			console.warn(
+				'     → Continuing deployment, but may encounter platform compatibility issues',
+			);
 			return null;
 		}
 	}
@@ -710,15 +757,19 @@ class CloudflareDeploymentManager {
 	 */
 	private restoreDockerfileARM64Flags(originalContent: string): void {
 		const dockerfilePath = join(PROJECT_ROOT, 'SandboxDockerfile');
-		
+
 		try {
 			writeFileSync(dockerfilePath, originalContent, 'utf-8');
-			console.log('🔄 Restored ARM64 platform flags to SandboxDockerfile for local development');
+			console.log(
+				'🔄 Restored ARM64 platform flags to SandboxDockerfile for local development',
+			);
 		} catch (error) {
 			console.warn(
 				`⚠️  Could not restore ARM64 flags to SandboxDockerfile: ${error instanceof Error ? error.message : String(error)}`,
 			);
-			console.warn('   You may need to manually re-run the setup script to restore ARM64 flags');
+			console.warn(
+				'   You may need to manually re-run the setup script to restore ARM64 flags',
+			);
 		}
 	}
 
@@ -801,11 +852,16 @@ class CloudflareDeploymentManager {
 	/**
 	 * Gets the zone name and ID for a given domain by testing subdomains
 	 */
-	private async detectZoneForDomain(customDomain: string, originalDomain: string): Promise<{
+	private async detectZoneForDomain(
+		customDomain: string,
+		originalDomain: string,
+	): Promise<{
 		zoneName: string | null;
 		zoneId: string | null;
 	}> {
-		console.log(`🔍 Detecting zone for custom domain: ${customDomain}, Original domain was: ${originalDomain}`);
+		console.log(
+			`🔍 Detecting zone for custom domain: ${customDomain}, Original domain was: ${originalDomain}`,
+		);
 
 		// Extract possible zone names by progressively removing subdomains
 		const domainParts = customDomain.split('.');
@@ -830,13 +886,15 @@ class CloudflareDeploymentManager {
 					{
 						headers: {
 							'Content-Type': 'application/json',
-							'Authorization': `Bearer ${this.env.CLOUDFLARE_API_TOKEN}`,
+							Authorization: `Bearer ${this.env.CLOUDFLARE_API_TOKEN}`,
 						},
-					}
+					},
 				);
 
 				if (!response.ok) {
-					console.log(`   ❌ API error for zone ${zoneName}: ${response.status} ${response.statusText}`);
+					console.log(
+						`   ❌ API error for zone ${zoneName}: ${response.status} ${response.statusText}`,
+					);
 					continue;
 				}
 
@@ -844,7 +902,9 @@ class CloudflareDeploymentManager {
 
 				if (data.success && data.result && data.result.length > 0) {
 					const zone = data.result[0];
-					console.log(`   ✅ Found zone: ${zoneName} (ID: ${zone.id})`);
+					console.log(
+						`   ✅ Found zone: ${zoneName} (ID: ${zone.id})`,
+					);
 					console.log(`      Zone status: ${zone.status}`);
 					console.log(`      Account: ${zone.account.name}`);
 					return {
@@ -855,11 +915,15 @@ class CloudflareDeploymentManager {
 					console.log(`   ❌ No zone found for: ${zoneName}`);
 				}
 			} catch (error) {
-				console.log(`   ❌ Error checking zone ${zoneName}: ${error instanceof Error ? error.message : String(error)}`);
+				console.log(
+					`   ❌ Error checking zone ${zoneName}: ${error instanceof Error ? error.message : String(error)}`,
+				);
 			}
 		}
 
-		console.error(`❌ No valid zone found for custom domain: ${customDomain}`);
+		console.error(
+			`❌ No valid zone found for custom domain: ${customDomain}`,
+		);
 		console.error(`   Tested zones: ${possibleZones.join(', ')}`);
 		console.error(`   Please ensure:`);
 		console.error(`   1. The domain is managed by Cloudflare`);
@@ -869,7 +933,6 @@ class CloudflareDeploymentManager {
 		return { zoneName: null, zoneId: null };
 	}
 
-    
 	/**
 	 * Updates wrangler.jsonc routes and deployment settings based on CUSTOM_DOMAIN
 	 */
@@ -880,8 +943,8 @@ class CloudflareDeploymentManager {
 		formattingOptions: {
 			insertSpaces: true,
 			keepLines: true,
-			tabSize: 4
-		}
+			tabSize: 4,
+		},
 	};
 
 	/**
@@ -915,7 +978,7 @@ class CloudflareDeploymentManager {
 	private logSuccess(message: string, details?: string[]): void {
 		console.log(`✅ ${message}`);
 		if (details) {
-			details.forEach(detail => console.log(`   ${detail}`));
+			details.forEach((detail) => console.log(`   ${detail}`));
 		}
 	}
 
@@ -925,15 +988,24 @@ class CloudflareDeploymentManager {
 	private logWarning(message: string, details?: string[]): void {
 		console.warn(`⚠️  ${message}`);
 		if (details) {
-			details.forEach(detail => console.warn(`   ${detail}`));
+			details.forEach((detail) => console.warn(`   ${detail}`));
 		}
 	}
 
 	/**
 	 * Updates a specific field in wrangler.jsonc configuration
 	 */
-	private updateWranglerField<T>(content: string, field: string, value: T): string {
-		const edits = modify(content, [field], value, CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS);
+	private updateWranglerField<T>(
+		content: string,
+		field: string,
+		value: T,
+	): string {
+		const edits = modify(
+			content,
+			[field],
+			value,
+			CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
+		);
 		return applyEdits(content, edits);
 	}
 
@@ -942,14 +1014,27 @@ class CloudflareDeploymentManager {
 	 */
 	private updateWranglerForWorkersDev(content: string): string {
 		let updatedContent = content;
-		
+
 		// Remove routes property if it exists
-		const removeRoutesEdits = modify(content, ['routes'], undefined, CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS);
+		const removeRoutesEdits = modify(
+			content,
+			['routes'],
+			undefined,
+			CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
+		);
 		updatedContent = applyEdits(updatedContent, removeRoutesEdits);
-		
+
 		// Set workers_dev = true and preview_urls = true
-		updatedContent = this.updateWranglerField(updatedContent, 'workers_dev', true);
-		updatedContent = this.updateWranglerField(updatedContent, 'preview_urls', true);
+		updatedContent = this.updateWranglerField(
+			updatedContent,
+			'workers_dev',
+			true,
+		);
+		updatedContent = this.updateWranglerField(
+			updatedContent,
+			'preview_urls',
+			true,
+		);
 
 		return updatedContent;
 	}
@@ -958,19 +1043,36 @@ class CloudflareDeploymentManager {
 	 * Updates wrangler.jsonc for custom domain deployment
 	 */
 	private updateWranglerForCustomDomain(
-		content: string, 
-		routes: Array<{ pattern: string; custom_domain: boolean; zone_id?: string; zone_name?: string }>,
-		preserveExistingFlags: boolean = false
+		content: string,
+		routes: Array<{
+			pattern: string;
+			custom_domain: boolean;
+			zone_id?: string;
+			zone_name?: string;
+		}>,
+		preserveExistingFlags: boolean = false,
 	): string {
 		let updatedContent = content;
 
 		// Update routes
-		updatedContent = this.updateWranglerField(updatedContent, 'routes', routes);
+		updatedContent = this.updateWranglerField(
+			updatedContent,
+			'routes',
+			routes,
+		);
 
 		// Only update workers_dev and preview_urls if not preserving existing flags
 		if (!preserveExistingFlags) {
-			updatedContent = this.updateWranglerField(updatedContent, 'workers_dev', false);
-			updatedContent = this.updateWranglerField(updatedContent, 'preview_urls', false);
+			updatedContent = this.updateWranglerField(
+				updatedContent,
+				'workers_dev',
+				false,
+			);
+			updatedContent = this.updateWranglerField(
+				updatedContent,
+				'preview_urls',
+				false,
+			);
 		}
 
 		return updatedContent;
@@ -980,22 +1082,29 @@ class CloudflareDeploymentManager {
 	 * Safely detects zone information for a domain, handling failures gracefully
 	 */
 	private async safeDetectZoneForDomain(
-		customDomain: string, 
-		originalCustomDomain: string | null
-	): Promise<{ zoneName: string | null; zoneId: string | null; success: boolean }> {
+		customDomain: string,
+		originalCustomDomain: string | null,
+	): Promise<{
+		zoneName: string | null;
+		zoneId: string | null;
+		success: boolean;
+	}> {
 		try {
 			if (!originalCustomDomain) {
 				return { zoneName: null, zoneId: null, success: false };
 			}
 
-			const { zoneName, zoneId } = await this.detectZoneForDomain(customDomain, originalCustomDomain);
+			const { zoneName, zoneId } = await this.detectZoneForDomain(
+				customDomain,
+				originalCustomDomain,
+			);
 			if (!zoneId) {
 				return { zoneName: null, zoneId: null, success: false };
 			}
 			return { zoneName, zoneId, success: true };
 		} catch (error) {
 			console.warn(
-				`⚠️  Zone detection failed for custom domain ${customDomain}: ${error instanceof Error ? error.message : String(error)}`
+				`⚠️  Zone detection failed for custom domain ${customDomain}: ${error instanceof Error ? error.message : String(error)}`,
 			);
 			console.log('   → Continuing without zone-specific routes');
 			return { zoneName: null, zoneId: null, success: false };
@@ -1003,29 +1112,38 @@ class CloudflareDeploymentManager {
 	}
 
 	private async updateCustomDomainRoutes(): Promise<string> {
-		const customDomain = this.config.vars?.CUSTOM_DOMAIN || process.env.CUSTOM_DOMAIN;
+		const customDomain =
+			this.config.vars?.CUSTOM_DOMAIN || process.env.CUSTOM_DOMAIN;
 		// Check for CUSTOM_PREVIEW_DOMAIN (env var takes priority)
-		const customPreviewDomain = process.env.CUSTOM_PREVIEW_DOMAIN || this.config.vars?.CUSTOM_PREVIEW_DOMAIN;
+		const customPreviewDomain =
+			process.env.CUSTOM_PREVIEW_DOMAIN ||
+			this.config.vars?.CUSTOM_PREVIEW_DOMAIN;
 
 		try {
 			const { content, config } = this.readWranglerConfig();
-			
+
 			// Get the original custom domain from existing routes (route with custom_domain: true)
-			const originalCustomDomain = config.routes?.find(route => route.custom_domain)?.pattern || null;
+			const originalCustomDomain =
+				config.routes?.find((route) => route.custom_domain)?.pattern ||
+				null;
 
 			if (!customDomain) {
 				console.log(
 					'ℹ️  CUSTOM_DOMAIN not set - removing routes and enabling workers.dev',
 				);
 
-				const updatedContent = this.updateWranglerForWorkersDev(content);
+				const updatedContent =
+					this.updateWranglerForWorkersDev(content);
 				this.writeWranglerConfig(updatedContent);
 
-				this.logSuccess('Updated wrangler.jsonc for workers.dev deployment:', [
-					'- Removed routes configuration',
-					'- Set workers_dev: true',
-					'- Set preview_urls: true'
-				]);
+				this.logSuccess(
+					'Updated wrangler.jsonc for workers.dev deployment:',
+					[
+						'- Removed routes configuration',
+						'- Set workers_dev: true',
+						'- Set preview_urls: true',
+					],
+				);
 				return '';
 			}
 
@@ -1041,7 +1159,11 @@ class CloudflareDeploymentManager {
 			}
 
 			// Safely detect zone information for main domain
-			const { zoneId, success: zoneDetectionSuccess } = await this.safeDetectZoneForDomain(customDomain, originalCustomDomain);
+			const { zoneId, success: zoneDetectionSuccess } =
+				await this.safeDetectZoneForDomain(
+					customDomain,
+					originalCustomDomain,
+				);
 
 			// If we have a custom preview domain, detect its zone information for wildcard routes
 			let previewZoneName: string | null = null;
@@ -1049,7 +1171,10 @@ class CloudflareDeploymentManager {
 			let previewZoneDetectionSuccess = false;
 
 			if (customPreviewDomain && customPreviewDomain !== '') {
-				const previewZoneInfo = await this.safeDetectZoneForDomain(customPreviewDomain, customPreviewDomain);
+				const previewZoneInfo = await this.safeDetectZoneForDomain(
+					customPreviewDomain,
+					customPreviewDomain,
+				);
 				previewZoneName = previewZoneInfo.zoneName;
 				previewZoneId = previewZoneInfo.zoneId;
 				previewZoneDetectionSuccess = previewZoneInfo.success;
@@ -1067,13 +1192,23 @@ class CloudflareDeploymentManager {
 				custom_domain: boolean;
 				zone_id?: string;
 			}>;
-			const existingWildcardRoute = config.routes?.find(route => !route.custom_domain);
+			const existingWildcardRoute = config.routes?.find(
+				(route) => !route.custom_domain,
+			);
 
 			// Determine which domain and zone to use for wildcard pattern
-			const wildcardDomain = (customPreviewDomain && customPreviewDomain !== '') ? customPreviewDomain : customDomain;
-			const wildcardZoneId = (customPreviewDomain && previewZoneDetectionSuccess && previewZoneId) 
-				? previewZoneId 
-				: (zoneDetectionSuccess && zoneId ? zoneId : undefined);
+			const wildcardDomain =
+				customPreviewDomain && customPreviewDomain !== ''
+					? customPreviewDomain
+					: customDomain;
+			const wildcardZoneId =
+				customPreviewDomain &&
+				previewZoneDetectionSuccess &&
+				previewZoneId
+					? previewZoneId
+					: zoneDetectionSuccess && zoneId
+						? zoneId
+						: undefined;
 
 			const wildcardRoute: {
 				pattern: string;
@@ -1092,17 +1227,22 @@ class CloudflareDeploymentManager {
 				console.log(`   Wildcard Zone ID: ${wildcardZoneId}`);
 				wildcardRoute.zone_id = wildcardZoneId;
 			} else {
-				const existingZoneId = existingWildcardRoute && existingWildcardRoute.zone_id;
+				const existingZoneId =
+					existingWildcardRoute && existingWildcardRoute.zone_id;
 				if (existingZoneId) {
 					wildcardRoute.zone_id = existingZoneId;
-                    console.warn(
-                        `📋 Using fallback wildcard route configuration (zone detection ${zoneDetectionSuccess ? 'returned no zone' : 'failed'})`
-                    );
+					console.warn(
+						`📋 Using fallback wildcard route configuration (zone detection ${zoneDetectionSuccess ? 'returned no zone' : 'failed'})`,
+					);
 				} else {
-                    // Fatal error
-                    console.error(`Failed to detect zone for custom domain ${customDomain}. Make sure the domain is properly configured in Cloudflare.`);
-                    throw new Error(`Failed to detect zone for custom domain ${customDomain}`);
-                }
+					// Fatal error
+					console.error(
+						`Failed to detect zone for custom domain ${customDomain}. Make sure the domain is properly configured in Cloudflare.`,
+					);
+					throw new Error(
+						`Failed to detect zone for custom domain ${customDomain}`,
+					);
+				}
 			}
 
 			expectedRoutes = [
@@ -1130,7 +1270,8 @@ class CloudflareDeploymentManager {
 						break;
 					}
 
-					const actualZoneId = (actual && (actual as any).zone_id) ?? null;
+					const actualZoneId =
+						(actual && (actual as any).zone_id) ?? null;
 					const expectedZoneId = expected.zone_id ?? null;
 					if (actualZoneId !== expectedZoneId) {
 						needsUpdate = true;
@@ -1149,7 +1290,11 @@ class CloudflareDeploymentManager {
 			// Update wrangler configuration
 			// If zone detection failed, preserve existing workers_dev and preview_urls values
 			const preserveExistingFlags = !zoneDetectionSuccess;
-			const updatedContent = this.updateWranglerForCustomDomain(content, expectedRoutes, preserveExistingFlags);
+			const updatedContent = this.updateWranglerForCustomDomain(
+				content,
+				expectedRoutes,
+				preserveExistingFlags,
+			);
 			this.writeWranglerConfig(updatedContent);
 
 			// Log the changes
@@ -1162,18 +1307,23 @@ class CloudflareDeploymentManager {
 			});
 
 			if (!preserveExistingFlags) {
-				routeDetails.push('Set workers_dev: false', 'Set preview_urls: false');
+				routeDetails.push(
+					'Set workers_dev: false',
+					'Set preview_urls: false',
+				);
 			} else {
-				routeDetails.push('Preserved existing workers_dev and preview_urls settings');
+				routeDetails.push(
+					'Preserved existing workers_dev and preview_urls settings',
+				);
 			}
 
 			this.logSuccess('Updated wrangler.jsonc routes:', routeDetails);
-            return customDomain;
+			return customDomain;
 		} catch (error) {
 			console.error(
 				`⚠️  Could not update custom domain routes: ${error instanceof Error ? error.message : String(error)}`,
 			);
-            throw error;
+			throw error;
 		}
 	}
 
@@ -1184,7 +1334,8 @@ class CloudflareDeploymentManager {
 		// Environment variable takes priority over wrangler.jsonc vars
 		const maxInstances =
 			process.env.MAX_SANDBOX_INSTANCES ||
-			this.config.vars?.MAX_SANDBOX_INSTANCES || "10";
+			this.config.vars?.MAX_SANDBOX_INSTANCES ||
+			'10';
 
 		if (!maxInstances) {
 			console.log(
@@ -1253,7 +1404,7 @@ class CloudflareDeploymentManager {
 			this.writeWranglerConfig(updatedContent);
 
 			this.logSuccess(
-				`Updated UserAppSandboxService max_instances: ${oldMaxInstances} → ${maxInstancesNum}`
+				`Updated UserAppSandboxService max_instances: ${oldMaxInstances} → ${maxInstancesNum}`,
 			);
 		} catch (error) {
 			throw new DeploymentError(
@@ -1268,9 +1419,9 @@ class CloudflareDeploymentManager {
 	 */
 	private updateContainerInstanceTypes(): void {
 		// Environment variable takes priority over wrangler.jsonc vars
-		const sandboxInstanceType = 
-			process.env.SANDBOX_INSTANCE_TYPE || 
-			this.config.vars?.SANDBOX_INSTANCE_TYPE || 
+		const sandboxInstanceType =
+			process.env.SANDBOX_INSTANCE_TYPE ||
+			this.config.vars?.SANDBOX_INSTANCE_TYPE ||
 			'standard-3';
 
 		console.log(
@@ -1307,13 +1458,15 @@ class CloudflareDeploymentManager {
 				userAppInstanceType = {
 					vcpu: 4,
 					memory_mib: 4096,
-					disk_mb: 6144
+					disk_mb: 6144,
 				};
 				console.log('   Using enhanced instance type configuration');
 			} else {
 				// Use the string value directly
 				userAppInstanceType = sandboxInstanceType;
-				console.log(`   Using instance type string: ${sandboxInstanceType}`);
+				console.log(
+					`   Using instance type string: ${sandboxInstanceType}`,
+				);
 			}
 
 			// Update UserAppSandboxService instance_type
@@ -1322,21 +1475,26 @@ class CloudflareDeploymentManager {
 				updatedContent,
 				['containers', userAppContainerIndex, 'instance_type'],
 				userAppInstanceType,
-				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS
+				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
 			);
-			updatedContent = applyEdits(updatedContent, userAppInstanceTypeEdits);
+			updatedContent = applyEdits(
+				updatedContent,
+				userAppInstanceTypeEdits,
+			);
 
 			// Write back the updated configuration
 			this.writeWranglerConfig(updatedContent);
 
-			this.logSuccess(`Updated container instance types for SANDBOX_INSTANCE_TYPE: ${sandboxInstanceType}`, [
-				`UserAppSandboxService: ${JSON.stringify(userAppInstanceType)}`,
-			]);
-
+			this.logSuccess(
+				`Updated container instance types for SANDBOX_INSTANCE_TYPE: ${sandboxInstanceType}`,
+				[
+					`UserAppSandboxService: ${JSON.stringify(userAppInstanceType)}`,
+				],
+			);
 		} catch (error) {
 			this.logWarning(
 				`Could not update container instance types: ${error instanceof Error ? error.message : String(error)}`,
-				['Continuing with current configuration...']
+				['Continuing with current configuration...'],
 			);
 			// Non-blocking - continue deployment
 		}
@@ -1346,13 +1504,17 @@ class CloudflareDeploymentManager {
 	 * Updates dispatch namespace configuration based on DISPATCH_NAMESPACE (env var overrides wrangler.jsonc)
 	 * If dispatch namespaces are not available, clears the DISPATCH_NAMESPACE var
 	 */
-	private updateDispatchNamespace(dispatchNamespacesAvailable: boolean): void {
+	private updateDispatchNamespace(
+		dispatchNamespacesAvailable: boolean,
+	): void {
 		// If dispatch namespaces are not available, clear the DISPATCH_NAMESPACE var
 		if (!dispatchNamespacesAvailable) {
-			console.log('🔧 Dispatch namespaces not available - clearing DISPATCH_NAMESPACE var');
+			console.log(
+				'🔧 Dispatch namespaces not available - clearing DISPATCH_NAMESPACE var',
+			);
 			try {
 				const { content } = this.readWranglerConfig();
-				
+
 				// Clear the DISPATCH_NAMESPACE var
 				const varsEdits = modify(
 					content,
@@ -1361,10 +1523,12 @@ class CloudflareDeploymentManager {
 					CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
 				);
 				const updatedContent = applyEdits(content, varsEdits);
-				
+
 				this.writeWranglerConfig(updatedContent);
-				this.logSuccess('Cleared DISPATCH_NAMESPACE var (dispatch namespaces not available)');
-				
+				this.logSuccess(
+					'Cleared DISPATCH_NAMESPACE var (dispatch namespaces not available)',
+				);
+
 				// Update internal config
 				if (this.config.vars) {
 					this.config.vars.DISPATCH_NAMESPACE = '';
@@ -1372,7 +1536,7 @@ class CloudflareDeploymentManager {
 			} catch (error) {
 				this.logWarning(
 					`Could not clear DISPATCH_NAMESPACE var: ${error instanceof Error ? error.message : String(error)}`,
-					['Continuing with deployment...']
+					['Continuing with deployment...'],
 				);
 			}
 			return;
@@ -1381,8 +1545,8 @@ class CloudflareDeploymentManager {
 		// Environment variable takes priority over wrangler.jsonc vars
 		const dispatchNamespace =
 			process.env.DISPATCH_NAMESPACE ||
-			this.config.vars?.DISPATCH_NAMESPACE || 
-			"orange-build-default-namespace";
+			this.config.vars?.DISPATCH_NAMESPACE ||
+			'orange-build-default-namespace';
 
 		const source = process.env.DISPATCH_NAMESPACE
 			? 'environment variable'
@@ -1417,7 +1581,10 @@ class CloudflareDeploymentManager {
 		try {
 			const { content, config } = this.readWranglerConfig();
 
-			if (!config.dispatch_namespaces || !Array.isArray(config.dispatch_namespaces)) {
+			if (
+				!config.dispatch_namespaces ||
+				!Array.isArray(config.dispatch_namespaces)
+			) {
 				console.warn(
 					'⚠️  No dispatch_namespaces configuration found in wrangler.jsonc',
 				);
@@ -1468,24 +1635,23 @@ class CloudflareDeploymentManager {
 				`Updated dispatch namespace: ${currentNamespace} → ${dispatchNamespace}`,
 				[
 					'Updated dispatch_namespaces[0].namespace',
-					'Updated vars.DISPATCH_NAMESPACE for consistency'
-				]
+					'Updated vars.DISPATCH_NAMESPACE for consistency',
+				],
 			);
 
 			// Update internal config to reflect changes
-            if (!this.config.dispatch_namespaces) {
-                this.config.dispatch_namespaces = [];
-            }
+			if (!this.config.dispatch_namespaces) {
+				this.config.dispatch_namespaces = [];
+			}
 			this.config.dispatch_namespaces[0].namespace = dispatchNamespace;
 			if (!this.config.vars) {
 				this.config.vars = {};
 			}
 			this.config.vars.DISPATCH_NAMESPACE = dispatchNamespace;
-
 		} catch (error) {
 			this.logWarning(
 				`Could not update dispatch namespace configuration: ${error instanceof Error ? error.message : String(error)}`,
-				['Continuing with current configuration...']
+				['Continuing with current configuration...'],
 			);
 			// Non-blocking - continue deployment
 		}
@@ -1508,14 +1674,21 @@ class CloudflareDeploymentManager {
 			// Remove wrangler.json files from dist/* directories
 			// Use find to locate and remove any wrangler.json files in dist subdirectories
 			try {
-				execSync('find dist -name "wrangler.json" -type f -delete 2>/dev/null || true', {
-					stdio: 'pipe',
-					cwd: PROJECT_ROOT,
-				});
-				console.log('   ✅ Removed cached wrangler.json files from dist');
+				execSync(
+					'find dist -name "wrangler.json" -type f -delete 2>/dev/null || true',
+					{
+						stdio: 'pipe',
+						cwd: PROJECT_ROOT,
+					},
+				);
+				console.log(
+					'   ✅ Removed cached wrangler.json files from dist',
+				);
 			} catch (findError) {
 				// Non-critical - continue if find fails
-				console.log('   ℹ️  No cached wrangler.json files found in dist');
+				console.log(
+					'   ℹ️  No cached wrangler.json files found in dist',
+				);
 			}
 
 			console.log('✅ Cache cleanup completed');
@@ -1575,22 +1748,27 @@ class CloudflareDeploymentManager {
 	 * Temporarily removes conflicting vars from wrangler.jsonc before deployment
 	 * Returns the original vars for restoration later
 	 */
-	private async removeConflictingVars(): Promise<Record<string, string> | null> {
+	private async removeConflictingVars(): Promise<Record<
+		string,
+		string
+	> | null> {
 		const prodVarsPath = join(PROJECT_ROOT, '.prod.vars');
-		
+
 		if (!existsSync(prodVarsPath)) {
-			console.log('ℹ️  No .prod.vars file found, skipping conflict resolution');
+			console.log(
+				'ℹ️  No .prod.vars file found, skipping conflict resolution',
+			);
 			return null;
 		}
 
 		try {
 			console.log('🔍 Checking for var/secret conflicts...');
-			
+
 			// Read .prod.vars to see which secrets will be uploaded
 			const prodVarsContent = readFileSync(prodVarsPath, 'utf-8');
 			const secretVarNames = new Set<string>();
-			
-			prodVarsContent.split('\n').forEach(line => {
+
+			prodVarsContent.split('\n').forEach((line) => {
 				line = line.trim();
 				if (line && !line.startsWith('#') && line.includes('=')) {
 					const varName = line.split('=')[0].trim();
@@ -1602,10 +1780,12 @@ class CloudflareDeploymentManager {
 			const conflictingVars: Record<string, string> = {};
 			const originalVars = { ...(this.config.vars || {}) };
 
-			Object.keys(originalVars).forEach(varName => {
+			Object.keys(originalVars).forEach((varName) => {
 				if (secretVarNames.has(varName)) {
 					conflictingVars[varName] = originalVars[varName] || '';
-					console.log(`🔄 Found conflict: ${varName} (will be moved from var to secret)`);
+					console.log(
+						`🔄 Found conflict: ${varName} (will be moved from var to secret)`,
+					);
 				}
 			});
 
@@ -1614,13 +1794,15 @@ class CloudflareDeploymentManager {
 				return null;
 			}
 
-			console.log(`⚠️  Temporarily removing ${Object.keys(conflictingVars).length} conflicting vars from wrangler.jsonc`);
+			console.log(
+				`⚠️  Temporarily removing ${Object.keys(conflictingVars).length} conflicting vars from wrangler.jsonc`,
+			);
 
 			// Remove conflicting vars from wrangler.jsonc
 			const { content } = this.readWranglerConfig();
-			
+
 			const updatedVars = { ...originalVars };
-			Object.keys(conflictingVars).forEach(varName => {
+			Object.keys(conflictingVars).forEach((varName) => {
 				delete updatedVars[varName];
 			});
 
@@ -1629,17 +1811,20 @@ class CloudflareDeploymentManager {
 				content,
 				['vars'],
 				updatedVars,
-				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS
+				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
 			);
 
 			const updatedContent = applyEdits(content, edits);
 			this.writeWranglerConfig(updatedContent);
 
-			this.logSuccess('Temporarily removed conflicting vars from wrangler.jsonc');
+			this.logSuccess(
+				'Temporarily removed conflicting vars from wrangler.jsonc',
+			);
 			return conflictingVars;
-
 		} catch (error) {
-			this.logWarning(`Could not remove conflicting vars: ${error instanceof Error ? error.message : String(error)}`);
+			this.logWarning(
+				`Could not remove conflicting vars: ${error instanceof Error ? error.message : String(error)}`,
+			);
 			return null;
 		}
 	}
@@ -1647,38 +1832,45 @@ class CloudflareDeploymentManager {
 	/**
 	 * Restores the original vars to wrangler.jsonc after deployment
 	 */
-	private async restoreOriginalVars(originalConflictingVars: Record<string, string> | null): Promise<void> {
-		if (!originalConflictingVars || Object.keys(originalConflictingVars).length === 0) {
+	private async restoreOriginalVars(
+		originalConflictingVars: Record<string, string> | null,
+	): Promise<void> {
+		if (
+			!originalConflictingVars ||
+			Object.keys(originalConflictingVars).length === 0
+		) {
 			return;
 		}
 
 		try {
 			console.log('🔄 Restoring original vars to wrangler.jsonc...');
-			
+
 			const { content, config } = this.readWranglerConfig();
-			
+
 			// Merge back the conflicting vars
 			const restoredVars = {
 				...(config.vars || {}),
-				...originalConflictingVars
+				...originalConflictingVars,
 			};
 
 			const edits = modify(
 				content,
 				['vars'],
 				restoredVars,
-				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS
+				CloudflareDeploymentManager.JSONC_FORMAT_OPTIONS,
 			);
 
 			const updatedContent = applyEdits(content, edits);
 			this.writeWranglerConfig(updatedContent);
 
-			this.logSuccess(`Restored ${Object.keys(originalConflictingVars).length} original vars to wrangler.jsonc`);
-			
+			this.logSuccess(
+				`Restored ${Object.keys(originalConflictingVars).length} original vars to wrangler.jsonc`,
+			);
 		} catch (error) {
-			this.logWarning(`Could not restore original vars: ${error instanceof Error ? error.message : String(error)}`, [
-				'You may need to manually restore wrangler.jsonc vars'
-			]);
+			this.logWarning(
+				`Could not restore original vars: ${error instanceof Error ? error.message : String(error)}`,
+				['You may need to manually restore wrangler.jsonc vars'],
+			);
 		}
 	}
 
@@ -1724,12 +1916,15 @@ class CloudflareDeploymentManager {
 		// Add environment variables that are set
 		secretVars.forEach((varName) => {
 			let value = process.env[varName];
-			
+
 			// Apply fallback logic for CLOUDFLARE_AI_GATEWAY_TOKEN
-			if (varName === 'CLOUDFLARE_AI_GATEWAY_TOKEN' && (!value || value === '')) {
+			if (
+				varName === 'CLOUDFLARE_AI_GATEWAY_TOKEN' &&
+				(!value || value === '')
+			) {
 				value = this.env.CLOUDFLARE_AI_GATEWAY_TOKEN;
 			}
-			
+
 			if (value && value !== '') {
 				// Skip placeholder values
 				if (
@@ -1819,7 +2014,9 @@ class CloudflareDeploymentManager {
 	 * Checks if dispatch namespaces (Workers for Platforms) are available for the user
 	 */
 	private async checkDispatchNamespaceAvailability(): Promise<boolean> {
-		console.log('🔍 Checking dispatch namespace availability (Workers for Platforms)...');
+		console.log(
+			'🔍 Checking dispatch namespace availability (Workers for Platforms)...',
+		);
 
 		try {
 			// Run the wrangler dispatch-namespace list command to test availability
@@ -1832,23 +2029,37 @@ class CloudflareDeploymentManager {
 			// If the command succeeds without error, dispatch namespaces are available
 			console.log('✅ Dispatch namespaces are available');
 			return true;
-
 		} catch (error: any) {
 			// Parse the error to check if it's specifically about dispatch namespace access
-			const errorOutput = error.stderr || error.stdout || error.message || '';
+			const errorOutput =
+				error.stderr || error.stdout || error.message || '';
 
-			if (errorOutput.includes('You do not have access to dispatch namespaces') || 
-				errorOutput.includes('code: 10121')) {
+			if (
+				errorOutput.includes(
+					'You do not have access to dispatch namespaces',
+				) ||
+				errorOutput.includes('code: 10121')
+			) {
 				console.log('⚠️  Dispatch namespaces are NOT available');
-				console.log('   Workers for Platforms is not enabled for this account');
-				console.log('   You can purchase it at: https://dash.cloudflare.com?to=/:account/workers-for-platforms');
-				console.log('   If you are an Enterprise customer, please contact your account team');
+				console.log(
+					'   Workers for Platforms is not enabled for this account',
+				);
+				console.log(
+					'   You can purchase it at: https://dash.cloudflare.com?to=/:account/workers-for-platforms',
+				);
+				console.log(
+					'   If you are an Enterprise customer, please contact your account team',
+				);
 				return false;
 			}
 
 			// For other errors, log them but assume availability (conservative approach)
-			console.warn(`⚠️  Could not verify dispatch namespace availability: ${errorOutput}`);
-			console.warn('   Proceeding with assumption that dispatch namespaces are available');
+			console.warn(
+				`⚠️  Could not verify dispatch namespace availability: ${errorOutput}`,
+			);
+			console.warn(
+				'   Proceeding with assumption that dispatch namespaces are available',
+			);
 			return true;
 		}
 	}
@@ -1858,14 +2069,18 @@ class CloudflareDeploymentManager {
 	 */
 	private commentOutDispatchNamespaces(): void {
 		try {
-			console.log('🔧 Commenting out dispatch_namespaces in wrangler.jsonc...');
-			
+			console.log(
+				'🔧 Commenting out dispatch_namespaces in wrangler.jsonc...',
+			);
+
 			const wranglerPath = join(PROJECT_ROOT, 'wrangler.jsonc');
 			const content = readFileSync(wranglerPath, 'utf-8');
-			
+
 			// Check if dispatch_namespaces is currently uncommented
 			if (!content.includes('"dispatch_namespaces": [')) {
-				console.log('ℹ️  dispatch_namespaces already commented out or not present');
+				console.log(
+					'ℹ️  dispatch_namespaces already commented out or not present',
+				);
 				return;
 			}
 
@@ -1873,41 +2088,43 @@ class CloudflareDeploymentManager {
 			// Look for the pattern and replace it with commented version
 			const commentedContent = content.replace(
 				/(\s*)"dispatch_namespaces": \[[\s\S]*?\]/,
-				'$1// "dispatch_namespaces": [\n$1//     {\n$1//         "binding": "DISPATCHER",\n$1//         "namespace": "orange-build-default-namespace",\n$1//         "experimental_remote": true\n$1//     }\n$1// ]'
+				'$1// "dispatch_namespaces": [\n$1//     {\n$1//         "binding": "DISPATCHER",\n$1//         "namespace": "orange-build-default-namespace",\n$1//         "experimental_remote": true\n$1//     }\n$1// ]',
 			);
 
 			if (commentedContent !== content) {
 				this.writeWranglerConfig(commentedContent);
-				this.logSuccess('Successfully commented out dispatch_namespaces in wrangler.jsonc');
+				this.logSuccess(
+					'Successfully commented out dispatch_namespaces in wrangler.jsonc',
+				);
 			} else {
 				console.log('ℹ️  No changes needed for dispatch_namespaces');
 			}
-
 		} catch (error) {
-			this.logWarning(`Could not comment out dispatch_namespaces: ${error instanceof Error ? error.message : String(error)}`, [
-				'Continuing with deployment...'
-			]);
+			this.logWarning(
+				`Could not comment out dispatch_namespaces: ${error instanceof Error ? error.message : String(error)}`,
+				['Continuing with deployment...'],
+			);
 		}
 	}
 
-    /**
-     * Runs database migrations
-     */
-    private async runDatabaseMigrations(): Promise<void> {
-        console.log('Running database migrations...');
-        try {
-            await execSync(
-                'bun run db:generate && bun run db:migrate:remote',
-                {
-                    stdio: 'inherit',
-                    cwd: PROJECT_ROOT,
-                    encoding: 'utf8',
-                }
-            );
-        } catch (error) {
-            console.warn('Database migrations failed:', error instanceof Error ? error.message : String(error));
-        }
-    }
+	/**
+	 * Runs database migrations
+	 */
+	private async runDatabaseMigrations(): Promise<void> {
+		console.log('Running database migrations...');
+		try {
+			await execSync('bun run db:generate && bun run db:migrate:remote', {
+				stdio: 'inherit',
+				cwd: PROJECT_ROOT,
+				encoding: 'utf8',
+			});
+		} catch (error) {
+			console.warn(
+				'Database migrations failed:',
+				error instanceof Error ? error.message : String(error),
+			);
+		}
+	}
 
 	/**
 	 * Main deployment orchestration method
@@ -1918,15 +2135,17 @@ class CloudflareDeploymentManager {
 		);
 
 		const startTime = Date.now();
-        let customDomain: string | null = null;
+		let customDomain: string | null = null;
 		let originalDockerfileContent: string | null = null;
 
 		try {
 			// Step 1: Early Configuration Updates (must happen before any wrangler commands)
-            this.cleanWranglerCache();
+			this.cleanWranglerCache();
 			console.log('\n📋 Step 1: Updating configuration files...');
-			
-			console.log('   🔧 Cleaning ARM64 development flags from Dockerfile');
+
+			console.log(
+				'   🔧 Cleaning ARM64 development flags from Dockerfile',
+			);
 			originalDockerfileContent = this.cleanDockerfileForDeployment();
 
 			console.log('   🔧 Updating package.json database commands');
@@ -1941,14 +2160,19 @@ class CloudflareDeploymentManager {
 			console.log('✅ Configuration files updated successfully!\n');
 
 			// Step 1.5: Check dispatch namespace availability early
-			console.log('\n📋 Step 1.5: Checking dispatch namespace availability...');
-			const dispatchNamespacesAvailable = await this.checkDispatchNamespaceAvailability();
-			
+			console.log(
+				'\n📋 Step 1.5: Checking dispatch namespace availability...',
+			);
+			const dispatchNamespacesAvailable =
+				await this.checkDispatchNamespaceAvailability();
+
 			// Comment out dispatch_namespaces in wrangler.jsonc if not available
 			if (!dispatchNamespacesAvailable) {
 				this.commentOutDispatchNamespaces();
 			}
-			console.log('✅ Dispatch namespace availability check completed!\n');
+			console.log(
+				'✅ Dispatch namespace availability check completed!\n',
+			);
 
 			// Step 2: Update container configuration if needed
 			console.log('\n📋 Step 2: Updating container configuration...');
@@ -1958,7 +2182,7 @@ class CloudflareDeploymentManager {
 			// Step 3: Resolve var/secret conflicts before deployment
 			console.log('\n📋 Step 3: Resolving var/secret conflicts...');
 			const conflictingVars = await this.removeConflictingVars();
-			
+
 			// Store for potential cleanup on early exit
 			this.conflictingVarsForCleanup = conflictingVars;
 
@@ -1985,7 +2209,9 @@ class CloudflareDeploymentManager {
 			if (dispatchNamespacesAvailable) {
 				console.log('   🔄 Workers for Platforms namespace setup');
 			} else {
-				console.log('   ⏭️  Skipping Workers for Platforms namespace setup (not available)');
+				console.log(
+					'   ⏭️  Skipping Workers for Platforms namespace setup (not available)',
+				);
 			}
 			console.log('   🔄 Templates repository deployment');
 			console.log('   🔄 Project build (clean + compile)');
@@ -1995,9 +2221,7 @@ class CloudflareDeploymentManager {
 
 			await Promise.all(operations);
 
-			console.log(
-				'✅ Parallel setup and build operations completed!',
-			);
+			console.log('✅ Parallel setup and build operations completed!');
 
 			let deploymentSucceeded = false;
 			try {
@@ -2014,14 +2238,14 @@ class CloudflareDeploymentManager {
 				// Step 7: Always restore original vars (even if deployment failed)
 				console.log('\n📋 Step 7: Restoring original configuration...');
 				await this.restoreOriginalVars(conflictingVars);
-				
+
 				// Clear the backup since we've restored
 				this.conflictingVarsForCleanup = null;
 			}
 
-            // Step 8: Run database migrations
-            console.log('\n📋 Step 8: Running database migrations...');
-            await this.runDatabaseMigrations();
+			// Step 8: Run database migrations
+			console.log('\n📋 Step 8: Running database migrations...');
+			await this.runDatabaseMigrations();
 
 			// Deployment complete
 			if (deploymentSucceeded) {
@@ -2032,14 +2256,18 @@ class CloudflareDeploymentManager {
 				console.log(
 					`✅ Your Cloudflare Orange Build platform is now live at https://${customDomain}! 🚀`,
 				);
-				
+
 				// Restore ARM64 flags for continued local development
 				if (originalDockerfileContent) {
-					console.log('\n🔄 Restoring local development configuration...');
+					console.log(
+						'\n🔄 Restoring local development configuration...',
+					);
 					this.restoreDockerfileARM64Flags(originalDockerfileContent);
 				}
 			} else {
-				throw new DeploymentError('Deployment failed during wrangler deploy or secret update');
+				throw new DeploymentError(
+					'Deployment failed during wrangler deploy or secret update',
+				);
 			}
 		} catch (error) {
 			console.error('\n❌ Deployment failed:');
@@ -2072,7 +2300,9 @@ class CloudflareDeploymentManager {
 		} finally {
 			// Always restore ARM64 flags if they were removed, even on deployment failure
 			if (originalDockerfileContent) {
-				console.log('\n🔄 Restoring local development configuration...');
+				console.log(
+					'\n🔄 Restoring local development configuration...',
+				);
 				this.restoreDockerfileARM64Flags(originalDockerfileContent);
 			}
 		}

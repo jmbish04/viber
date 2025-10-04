@@ -13,12 +13,24 @@ export default function AppsPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	// Derive initial sort from URL or localStorage, fallback to 'recent'
-	const allowedSorts: AppSortOption[] = ['recent', 'popular', 'trending', 'starred'];
+	const allowedSorts: AppSortOption[] = [
+		'recent',
+		'popular',
+		'trending',
+		'starred',
+	];
 	const sortParam = searchParams.get('sort') as AppSortOption | null;
-	const savedSort = (typeof localStorage !== 'undefined' ? localStorage.getItem('apps.sort') : null) as AppSortOption | null;
-	const initialSort: AppSortOption = (sortParam && allowedSorts.includes(sortParam))
-		? sortParam
-		: (savedSort && allowedSorts.includes(savedSort) ? savedSort : 'recent');
+	const savedSort = (
+		typeof localStorage !== 'undefined'
+			? localStorage.getItem('apps.sort')
+			: null
+	) as AppSortOption | null;
+	const initialSort: AppSortOption =
+		sortParam && allowedSorts.includes(sortParam)
+			? sortParam
+			: savedSort && allowedSorts.includes(savedSort)
+				? savedSort
+				: 'recent';
 
 	const {
 		// Filter state
@@ -90,7 +102,7 @@ export default function AppsPage() {
 								onChange={handleVisibilityChange}
 							/>
 						</div>
-						
+
 						<div className="flex items-start gap-4 justify-between">
 							{/* Search and Filters */}
 							<AppFiltersForm
@@ -113,12 +125,21 @@ export default function AppsPage() {
 								onValueChange={(v) => {
 									handleSortChange(v);
 									// Persist to URL and localStorage
-									try { localStorage.setItem('apps.sort', v); } catch {}
-									const next = new URLSearchParams(searchParams);
+									try {
+										localStorage.setItem('apps.sort', v);
+									} catch {}
+									const next = new URLSearchParams(
+										searchParams,
+									);
 									next.set('sort', v);
 									setSearchParams(next, { replace: true });
 								}}
-								availableSorts={['recent', 'popular', 'trending', 'starred']}
+								availableSorts={[
+									'recent',
+									'popular',
+									'trending',
+									'starred',
+								]}
 							/>
 						</div>
 					</div>

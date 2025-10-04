@@ -1,4 +1,7 @@
-export function extractCommands(rawOutput: string, onlyInstallCommands: boolean = false): string[] {
+export function extractCommands(
+	rawOutput: string,
+	onlyInstallCommands: boolean = false,
+): string[] {
 	const commands: string[] = [];
 
 	// Helper function to check if command is an install command
@@ -24,7 +27,7 @@ export function extractCommands(rawOutput: string, onlyInstallCommands: boolean 
 				// Remove shell prompts like $ or >
 				return line.replace(/^[$>]\s*/, '');
 			})
-			.filter((line) => { 
+			.filter((line) => {
 				// Filter by install commands if onlyInstallCommands is true
 				return !onlyInstallCommands || isInstallCommand(line);
 			});
@@ -88,8 +91,10 @@ export function extractCommands(rawOutput: string, onlyInstallCommands: boolean 
 	let filteredCommands = [...new Set(commands)];
 	if (onlyInstallCommands) {
 		// Filter to only keep package manager install/add commands
-		filteredCommands = filteredCommands.filter(command => {
-			return /^(?:npm|yarn|pnpm|bun)\s+(?:install|add)(?:\s|$)/.test(command);
+		filteredCommands = filteredCommands.filter((command) => {
+			return /^(?:npm|yarn|pnpm|bun)\s+(?:install|add)(?:\s|$)/.test(
+				command,
+			);
 		});
 	}
 

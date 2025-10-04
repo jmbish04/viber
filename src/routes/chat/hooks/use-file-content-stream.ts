@@ -58,7 +58,10 @@ export function useFileContentStream(
 				content.length,
 				currentPositionRef.current + chunkSize,
 			);
-			const chunk = content.slice(currentPositionRef.current, nextPosition);
+			const chunk = content.slice(
+				currentPositionRef.current,
+				nextPosition,
+			);
 
 			// Update the current file's content
 			setStreamedFiles((prev) =>

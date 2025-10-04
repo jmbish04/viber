@@ -9,7 +9,10 @@ import { DORateLimitStore as BaseDORateLimitStore } from './services/rate-limit/
 import { getPreviewDomain } from './utils/urls';
 
 // Durable Object and Service exports
-export { UserAppSandboxService, DeployerService } from './services/sandbox/sandboxSdkClient';
+export {
+	UserAppSandboxService,
+	DeployerService,
+} from './services/sandbox/sandboxSdkClient';
 
 // export const CodeGeneratorAgent = Sentry.instrumentDurableObjectWithSentry(sentryOptions, SmartCodeGeneratorAgent);
 // export const DORateLimitStore = Sentry.instrumentDurableObjectWithSentry(sentryOptions, BaseDORateLimitStore);
@@ -29,7 +32,10 @@ const logger = createLogger('App');
  * @param env The environment bindings.
  * @returns A Response object from the sandbox, the dispatched worker, or an error.
  */
-async function handleUserAppRequest(request: Request, env: Env): Promise<Response> {
+async function handleUserAppRequest(
+	request: Request,
+	env: Env,
+): Promise<Response> {
 	const url = new URL(request.url);
 	const { hostname } = url;
 	logger.info(`Handling user app request for: ${hostname}`);
@@ -43,10 +49,14 @@ async function handleUserAppRequest(request: Request, env: Env): Promise<Respons
 	}
 
 	// 2. If sandbox misses, attempt to dispatch to a deployed worker.
-	logger.info(`Sandbox miss for ${hostname}, attempting dispatch to permanent worker.`);
+	logger.info(
+		`Sandbox miss for ${hostname}, attempting dispatch to permanent worker.`,
+	);
 	if (!isDispatcherAvailable(env)) {
 		logger.warn(`Dispatcher not available, cannot serve: ${hostname}`);
-		return new Response('This application is not currently available.', { status: 404 });
+		return new Response('This application is not currently available.', {
+			status: 404,
+		});
 	}
 
 	// Extract the app name (e.g., "xyz" from "xyz.build.cloudflare.dev").
@@ -58,8 +68,13 @@ async function handleUserAppRequest(request: Request, env: Env): Promise<Respons
 		return await worker.fetch(request);
 	} catch (error: any) {
 		// This block catches errors if the binding doesn't exist or if worker.fetch() fails.
-		logger.warn(`Error dispatching to worker '${appName}': ${error.message}`);
-		return new Response('An error occurred while loading this application.', { status: 500 });
+		logger.warn(
+			`Error dispatching to worker '${appName}': ${error.message}`,
+		);
+		return new Response(
+			'An error occurred while loading this application.',
+			{ status: 500 },
+		);
 	}
 }
 
@@ -67,14 +82,23 @@ async function handleUserAppRequest(request: Request, env: Env): Promise<Respons
  * Main Worker fetch handler with robust, secure routing.
  */
 const worker = {
-	async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+	async fetch(
+		request: Request,
+		env: Env,
+		ctx: ExecutionContext,
+	): Promise<Response> {
 		// --- Pre-flight Checks ---
 
 		// 1. Critical configuration check: Ensure custom domain is set.
-        const previewDomain = getPreviewDomain(env);
+		const previewDomain = getPreviewDomain(env);
 		if (!previewDomain || previewDomain.trim() === '') {
-			console.error('FATAL: env.CUSTOM_DOMAIN is not configured in wrangler.toml or the Cloudflare dashboard.');
-			return new Response('Server configuration error: Application domain is not set.', { status: 500 });
+			console.error(
+				'FATAL: env.CUSTOM_DOMAIN is not configured in wrangler.toml or the Cloudflare dashboard.',
+			);
+			return new Response(
+				'Server configuration error: Application domain is not set.',
+				{ status: 500 },
+			);
 		}
 
 		const url = new URL(request.url);
@@ -83,7 +107,10 @@ const worker = {
 		// 2. Security: Immediately reject any requests made via an IP address.
 		const ipRegex = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/;
 		if (ipRegex.test(hostname)) {
-			return new Response('Access denied. Please use the assigned domain name.', { status: 403 });
+			return new Response(
+				'Access denied. Please use the assigned domain name.',
+				{ status: 403 },
+			);
 		}
 
 		// --- Domain-based Routing ---

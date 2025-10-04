@@ -22,7 +22,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
  * Scrubbing disabled: pass-through
  */
 function scrubCredentials(data: unknown): unknown {
-    return data;
+	return data;
 }
 
 export class StructuredLogger {
@@ -130,7 +130,9 @@ export class StructuredLogger {
 
 		// Add additional fields with credential scrubbing
 		if (Object.keys(this.additionalFields).length > 0) {
-			const scrubbedAdditionalFields = scrubCredentials(this.additionalFields) as Record<string, unknown>;
+			const scrubbedAdditionalFields = scrubCredentials(
+				this.additionalFields,
+			) as Record<string, unknown>;
 			Object.assign(logEntry, scrubbedAdditionalFields);
 		}
 
@@ -138,8 +140,15 @@ export class StructuredLogger {
 		if (data) {
 			try {
 				const scrubbedData = scrubCredentials(data);
-				if (scrubbedData && typeof scrubbedData === 'object' && !Array.isArray(scrubbedData)) {
-					Object.assign(logEntry, scrubbedData as Record<string, unknown>);
+				if (
+					scrubbedData &&
+					typeof scrubbedData === 'object' &&
+					!Array.isArray(scrubbedData)
+				) {
+					Object.assign(
+						logEntry,
+						scrubbedData as Record<string, unknown>,
+					);
 				}
 			} catch {
 				// If scrubbing fails, add a safe placeholder
@@ -165,25 +174,29 @@ export class StructuredLogger {
 	 */
 	private safeStringify(obj: unknown): string {
 		const seen = new WeakSet();
-		
+
 		return JSON.stringify(obj, (_key, value) => {
 			// Handle undefined, functions, symbols
-			if (value === undefined || typeof value === 'function' || typeof value === 'symbol') {
+			if (
+				value === undefined ||
+				typeof value === 'function' ||
+				typeof value === 'symbol'
+			) {
 				return undefined;
 			}
-			
+
 			// Handle BigInt
 			if (typeof value === 'bigint') {
 				return value.toString();
 			}
-			
+
 			// Handle circular references
 			if (typeof value === 'object' && value !== null) {
 				if (seen.has(value)) {
 					return '[Circular]';
 				}
 				seen.add(value);
-				
+
 				// Handle Error objects specially to preserve stack traces
 				if (value instanceof Error) {
 					return {
@@ -191,19 +204,28 @@ export class StructuredLogger {
 						message: value.message,
 						stack: value.stack,
 						// Include any additional properties
-						...Object.getOwnPropertyNames(value).reduce((acc, prop) => {
-							if (!['name', 'message', 'stack'].includes(prop)) {
-								const descriptor = Object.getOwnPropertyDescriptor(value, prop);
-								if (descriptor && descriptor.enumerable) {
-									acc[prop] = (value as any)[prop];
+						...Object.getOwnPropertyNames(value).reduce(
+							(acc, prop) => {
+								if (
+									!['name', 'message', 'stack'].includes(prop)
+								) {
+									const descriptor =
+										Object.getOwnPropertyDescriptor(
+											value,
+											prop,
+										);
+									if (descriptor && descriptor.enumerable) {
+										acc[prop] = (value as any)[prop];
+									}
 								}
-							}
-							return acc;
-						}, {} as Record<string, unknown>)
+								return acc;
+							},
+							{} as Record<string, unknown>,
+						),
 					};
 				}
 			}
-			
+
 			return value;
 		});
 	}
@@ -255,7 +277,9 @@ export class StructuredLogger {
 						component: logEntry.component,
 						msg: '[LOG_STRINGIFY_FAILED]',
 						stringifyError:
-							e instanceof Error ? { name: e.name, message: e.message } : String(e),
+							e instanceof Error
+								? { name: e.name, message: e.message }
+								: String(e),
 					}),
 				);
 			}
@@ -328,19 +352,30 @@ export class StructuredLogger {
 		let error: Error | undefined;
 		const otherArgs: unknown[] = [];
 
-		const isErrorLike = (value: unknown): value is { name?: unknown; message?: unknown; stack?: unknown } => {
+		const isErrorLike = (
+			value: unknown,
+		): value is { name?: unknown; message?: unknown; stack?: unknown } => {
 			return (
 				value !== null &&
 				typeof value === 'object' &&
-				('message' in (value as Record<string, unknown>) || 'name' in (value as Record<string, unknown>))
+				('message' in (value as Record<string, unknown>) ||
+					'name' in (value as Record<string, unknown>))
 			);
 		};
 
-		const toError = (value: { name?: unknown; message?: unknown; stack?: unknown }): Error => {
-			const msg = typeof value.message === 'string' ? value.message : 'Unknown error';
+		const toError = (value: {
+			name?: unknown;
+			message?: unknown;
+			stack?: unknown;
+		}): Error => {
+			const msg =
+				typeof value.message === 'string'
+					? value.message
+					: 'Unknown error';
 			const err = new Error(msg);
 			if (typeof value.name === 'string') err.name = value.name;
-			if (typeof value.stack === 'string') (err as Error).stack = value.stack;
+			if (typeof value.stack === 'string')
+				(err as Error).stack = value.stack;
 			return err;
 		};
 
@@ -377,7 +412,7 @@ export class StructuredLogger {
 
 	error(message: string, ...args: unknown[]): void {
 		const { data, error } = this.processArgsWithError(args);
-        Sentry.captureException(error || new Error(message), { extra: data });
+		Sentry.captureException(error || new Error(message), { extra: data });
 		this.log('error', message, data, error);
 	}
 
@@ -443,7 +478,6 @@ function getObjectType(obj: unknown): string | undefined {
 		return undefined;
 	}
 }
-
 
 /**
  * Logger factory for global configuration

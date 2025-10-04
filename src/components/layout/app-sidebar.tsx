@@ -210,7 +210,6 @@ export function AppSidebar() {
 					{/* Build Button */}
 					<SidebarGroup>
 						<SidebarGroupContent>
-	
 							{location.pathname !== '/' && (
 								<div
 									className={cn(
@@ -399,7 +398,7 @@ export function AppSidebar() {
 							{favoriteApps.length > 0 && (
 								<>
 									<SidebarSeparator />
-									<SidebarGroup className='mt-4'>
+									<SidebarGroup className="mt-4">
 										<SidebarGroupLabel
 											className={cn(
 												'flex items-center gap-2 text-md text-text-primary',
@@ -409,7 +408,6 @@ export function AppSidebar() {
 										>
 											{!isCollapsed && 'Bookmarked'}
 											<Bookmark className="h-5 w-5 fill-yellow-500 text-yellow-500" />
-											
 										</SidebarGroupLabel>
 										<SidebarGroupContent>
 											<SidebarMenu>

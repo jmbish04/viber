@@ -8,7 +8,8 @@ export const SUPPORTED_IMAGE_MIME_TYPES = [
 	'image/webp',
 ] as const;
 
-export type SupportedImageMimeType = typeof SUPPORTED_IMAGE_MIME_TYPES[number];
+export type SupportedImageMimeType =
+	(typeof SUPPORTED_IMAGE_MIME_TYPES)[number];
 
 /**
  * Image attachment for user messages
@@ -35,14 +36,20 @@ export interface ImageAttachment {
 /**
  * Utility to check if a MIME type is supported
  */
-export function isSupportedImageType(mimeType: string): mimeType is SupportedImageMimeType {
-	return SUPPORTED_IMAGE_MIME_TYPES.includes(mimeType as SupportedImageMimeType);
+export function isSupportedImageType(
+	mimeType: string,
+): mimeType is SupportedImageMimeType {
+	return SUPPORTED_IMAGE_MIME_TYPES.includes(
+		mimeType as SupportedImageMimeType,
+	);
 }
 
 /**
  * Utility to get file extension from MIME type
  */
-export function getFileExtensionFromMimeType(mimeType: SupportedImageMimeType): string {
+export function getFileExtensionFromMimeType(
+	mimeType: SupportedImageMimeType,
+): string {
 	const map: Record<SupportedImageMimeType, string> = {
 		'image/png': 'png',
 		'image/jpeg': 'jpg',

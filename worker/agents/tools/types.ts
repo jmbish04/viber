@@ -18,18 +18,22 @@ export interface ToolCallResult {
 	result?: unknown;
 }
 
-export type ToolImplementation<TArgs = Record<string, unknown>, TResult = unknown> = 
-	(args: TArgs) => Promise<TResult>;
+export type ToolImplementation<
+	TArgs = Record<string, unknown>,
+	TResult = unknown,
+> = (args: TArgs) => Promise<TResult>;
 
 export type ToolDefinition<
-    TArgs = Record<string, unknown>,
-    TResult = unknown
+	TArgs = Record<string, unknown>,
+	TResult = unknown,
 > = ChatCompletionFunctionTool & {
-    implementation: ToolImplementation<TArgs, TResult>;
-    onStart?: (args: TArgs) => void;
-    onComplete?: (args: TArgs, result: TResult) => void;
+	implementation: ToolImplementation<TArgs, TResult>;
+	onStart?: (args: TArgs) => void;
+	onComplete?: (args: TArgs, result: TResult) => void;
 };
 
-export type ExtractToolArgs<T> = T extends ToolImplementation<infer A, any> ? A : never;
+export type ExtractToolArgs<T> =
+	T extends ToolImplementation<infer A, any> ? A : never;
 
-export type ExtractToolResult<T> = T extends ToolImplementation<any, infer R> ? R : never;
+export type ExtractToolResult<T> =
+	T extends ToolImplementation<any, infer R> ? R : never;

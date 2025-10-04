@@ -55,8 +55,8 @@ export default defineConfig({
 			debug: 'debug/src/browser',
 			// "@": path.resolve(__dirname, "./src"),
 			'@': path.resolve(__dirname, './src'),
-            'shared': path.resolve(__dirname, './shared'),
-            'worker': path.resolve(__dirname, './worker'),
+			shared: path.resolve(__dirname, './shared'),
+			worker: path.resolve(__dirname, './worker'),
 		},
 	},
 

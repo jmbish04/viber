@@ -171,11 +171,13 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 	const stickyScroll = useRef(true);
 	const { theme } = useTheme();
 
-
 	useEffect(() => {
 		let configuredTheme = theme;
 		if (theme === 'system') {
-			configuredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+			configuredTheme = window.matchMedia('(prefers-color-scheme: dark)')
+				.matches
+				? 'dark'
+				: 'light';
 		}
 		editor.current = monaco.editor.create(containerRef.current!, {
 			language: createOptions.language || 'typescript',
@@ -242,7 +244,10 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 		const decorations: monaco.editor.IModelDeltaDecoration[] = [];
 		const text = model.getValue();
 		let match: RegExpExecArray | null;
-		const regex = new RegExp(find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+		const regex = new RegExp(
+			find.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+			'g',
+		);
 
 		while ((match = regex.exec(text)) !== null) {
 			const startPos = model.getPositionAt(match.index);
@@ -283,7 +288,8 @@ export const MonacoEditor = memo<MonacoEditorProps>(function MonacoEditor({
 			}
 		}
 
-		const oldDecorations = editor.current.getModel()?.getAllDecorations() || [];
+		const oldDecorations =
+			editor.current.getModel()?.getAllDecorations() || [];
 		editor.current.deltaDecorations(
 			oldDecorations.map((d) => d.id),
 			decorations,

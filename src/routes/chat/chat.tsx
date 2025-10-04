@@ -20,7 +20,11 @@ import { ViewModeSwitch } from './components/view-mode-switch';
 import { DebugPanel, type DebugMessage } from './components/debug-panel';
 import { DeploymentControls } from './components/deployment-controls';
 import { useChat, type FileType } from './hooks/use-chat';
-import { type ModelConfigsData, type BlueprintType, SUPPORTED_IMAGE_MIME_TYPES } from '@/api-types';
+import {
+	type ModelConfigsData,
+	type BlueprintType,
+	SUPPORTED_IMAGE_MIME_TYPES,
+} from '@/api-types';
 import { Copy } from './components/copy';
 import { useFileContentStream } from './hooks/use-file-content-stream';
 import { logger } from '@/utils/logger';
@@ -40,7 +44,7 @@ export default function Chat() {
 	const [searchParams] = useSearchParams();
 	const userQuery = searchParams.get('query');
 	const agentMode = searchParams.get('agentMode') || 'deterministic';
-	
+
 	// Extract images from URL params if present
 	const userImages = useMemo(() => {
 		const imagesParam = searchParams.get('images');
@@ -57,7 +61,9 @@ export default function Chat() {
 	const { app, loading: appLoading } = useApp(urlChatId);
 
 	// If we have an existing app, use its data
-	const displayQuery = app ? app.originalPrompt || app.title : userQuery || '';
+	const displayQuery = app
+		? app.originalPrompt || app.title
+		: userQuery || '';
 	const appTitle = app?.title;
 
 	// Manual refresh trigger for preview
@@ -141,9 +147,9 @@ export default function Chat() {
 	const navigate = useNavigate();
 
 	const [activeFilePath, setActiveFilePath] = useState<string>();
-	const [view, setView] = useState<'editor' | 'preview' | 'blueprint' | 'terminal'>(
-		'editor',
-	);
+	const [view, setView] = useState<
+		'editor' | 'preview' | 'blueprint' | 'terminal'
+	>('editor');
 
 	// Terminal state
 	// const [terminalLogs, setTerminalLogs] = useState<TerminalLog[]>([]);
@@ -153,11 +159,18 @@ export default function Chat() {
 	const deploymentControlsRef = useRef<HTMLDivElement>(null);
 
 	// Model config info state
-	const [modelConfigs, setModelConfigs] = useState<{
-		agents: Array<{ key: string; name: string; description: string; }>;
-		userConfigs: ModelConfigsData['configs'];
-		defaultConfigs: ModelConfigsData['defaults'];
-	} | undefined>();
+	const [modelConfigs, setModelConfigs] = useState<
+		| {
+				agents: Array<{
+					key: string;
+					name: string;
+					description: string;
+				}>;
+				userConfigs: ModelConfigsData['configs'];
+				defaultConfigs: ModelConfigsData['defaults'];
+		  }
+		| undefined
+	>();
 	const [loadingConfigs, setLoadingConfigs] = useState(false);
 
 	// Handler for model config info requests
@@ -165,9 +178,11 @@ export default function Chat() {
 		if (!websocket) return;
 
 		setLoadingConfigs(true);
-		websocket.send(JSON.stringify({
-			type: 'get_model_configs'
-		}));
+		websocket.send(
+			JSON.stringify({
+				type: 'get_model_configs',
+			}),
+		);
 	}, [websocket]);
 
 	// Listen for model config info WebSocket messages
@@ -182,7 +197,10 @@ export default function Chat() {
 					setLoadingConfigs(false);
 				}
 			} catch (error) {
-				logger.error('Error parsing WebSocket message for model configs:', error);
+				logger.error(
+					'Error parsing WebSocket message for model configs:',
+					error,
+				);
 			}
 		};
 
@@ -205,11 +223,12 @@ export default function Chat() {
 	const [newMessage, setNewMessage] = useState('');
 	const [showTooltip, setShowTooltip] = useState(false);
 
-	const { images, addImages, removeImage, clearImages, isProcessing } = useImageUpload({
-		onError: (error) => {
-			console.error('Chat image upload error:', error);
-		},
-	});
+	const { images, addImages, removeImage, clearImages, isProcessing } =
+		useImageUpload({
+			onError: (error) => {
+				console.error('Chat image upload error:', error);
+			},
+		});
 	const imageInputRef = useRef<HTMLInputElement>(null);
 
 	// Fake stream bootstrap files
@@ -230,9 +249,12 @@ export default function Chat() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
-	const handleViewModeChange = useCallback((mode: 'preview' | 'editor' | 'blueprint') => {
-		setView(mode);
-	}, []);
+	const handleViewModeChange = useCallback(
+		(mode: 'preview' | 'editor' | 'blueprint') => {
+			setView(mode);
+		},
+		[],
+	);
 
 	// // Terminal functions
 	// const handleTerminalCommand = useCallback((command: string) => {
@@ -302,7 +324,9 @@ export default function Chat() {
 	]);
 
 	const isPhase1Complete = useMemo(() => {
-		return phaseTimeline.length > 0 && phaseTimeline[0].status === 'completed';
+		return (
+			phaseTimeline.length > 0 && phaseTimeline[0].status === 'completed'
+		);
 	}, [phaseTimeline]);
 
 	const isGitHubExportReady = useMemo(() => {
@@ -319,7 +343,10 @@ export default function Chat() {
 
 	const [mainMessage, ...otherMessages] = useMemo(() => messages, [messages]);
 
-	const { scrollToBottom } = useAutoScroll(messagesContainerRef, { behavior: 'smooth', watch: [messages] });
+	const { scrollToBottom } = useAutoScroll(messagesContainerRef, {
+		behavior: 'smooth',
+		watch: [messages],
+	});
 
 	const prevMessagesLengthRef = useRef(0);
 
@@ -423,11 +450,12 @@ export default function Chat() {
 	}, [projectStages, chatId]);
 
 	const chatFormRef = useRef<HTMLFormElement>(null);
-	const { isDragging: isChatDragging, dragHandlers: chatDragHandlers } = useDragDrop({
-		onFilesDropped: addImages,
-		accept: [...SUPPORTED_IMAGE_MIME_TYPES],
-		disabled: isChatDisabled,
-	});
+	const { isDragging: isChatDragging, dragHandlers: chatDragHandlers } =
+		useDragDrop({
+			onFilesDropped: addImages,
+			accept: [...SUPPORTED_IMAGE_MIME_TYPES],
+			disabled: isChatDisabled,
+		});
 
 	const onNewMessage = useCallback(
 		(e: FormEvent) => {
@@ -455,16 +483,31 @@ export default function Chat() {
 			// Ensure we scroll after sending our own message
 			requestAnimationFrame(() => scrollToBottom());
 		},
-		[newMessage, websocket, sendUserMessage, isChatDisabled, scrollToBottom, images, clearImages],
+		[
+			newMessage,
+			websocket,
+			sendUserMessage,
+			isChatDisabled,
+			scrollToBottom,
+			images,
+			clearImages,
+		],
 	);
 
 	const [progress, total] = useMemo((): [number, number] => {
 		// Calculate phase progress instead of file progress
-		const completedPhases = phaseTimeline.filter(p => p.status === 'completed').length;
+		const completedPhases = phaseTimeline.filter(
+			(p) => p.status === 'completed',
+		).length;
 
 		// Get predicted phase count from blueprint, fallback to current phase count
-		const predictedPhaseCount = blueprint?.implementationRoadmap?.length || 0;
-		const totalPhases = Math.max(predictedPhaseCount, phaseTimeline.length, 1);
+		const predictedPhaseCount =
+			blueprint?.implementationRoadmap?.length || 0;
+		const totalPhases = Math.max(
+			predictedPhaseCount,
+			phaseTimeline.length,
+			1,
+		);
 
 		return [completedPhases, totalPhases];
 	}, [phaseTimeline, blueprint?.implementationRoadmap]);
@@ -502,7 +545,10 @@ export default function Chat() {
 					layout="position"
 					className="flex-1 shrink-0 flex flex-col basis-0 max-w-lg relative z-10 h-full min-h-0"
 				>
-					<div className="flex-1 overflow-y-auto min-h-0 chat-messages-scroll" ref={messagesContainerRef}>
+					<div
+						className="flex-1 overflow-y-auto min-h-0 chat-messages-scroll"
+						ref={messagesContainerRef}
+					>
 						<div className="pt-5 px-4 pb-4 text-sm flex flex-col gap-5">
 							{appLoading ? (
 								<div className="flex items-center gap-2 text-text-tertiary">
@@ -560,7 +606,9 @@ export default function Chat() {
 								}}
 								chatId={chatId}
 								isDeploying={isDeploying}
-								handleDeployToCloudflare={handleDeployToCloudflare}
+								handleDeployToCloudflare={
+									handleDeployToCloudflare
+								}
 							/>
 
 							{/* Deployment and Generation Controls */}
@@ -623,49 +671,52 @@ export default function Chat() {
 					</div>
 
 					<form
-                        ref={chatFormRef}
-                        onSubmit={onNewMessage}
-                        className="shrink-0 p-4 pb-5 bg-transparent"
-                        {...chatDragHandlers}
-                    >
-					<input
-						ref={imageInputRef}
-						type="file"
-						accept={SUPPORTED_IMAGE_MIME_TYPES.join(',')}
-						multiple
-						onChange={(e) => {
-							const files = Array.from(e.target.files || []);
-							if (files.length > 0) {
-								addImages(files);
-							}
-							e.target.value = '';
-						}}
-						className="hidden"
-						disabled={isChatDisabled}
-					/>
-					<div className="relative">
-						{isChatDragging && (
-							<div className="absolute inset-0 flex items-center justify-center bg-accent/10 backdrop-blur-sm rounded-xl z-50 pointer-events-none">
-								<p className="text-accent font-medium">Drop images here</p>
-							</div>
-						)}
-						{images.length > 0 && (
-							<div className="mb-2">
-								<ImageAttachmentPreview
-									images={images}
-									onRemove={removeImage}
-									compact
-								/>
-							</div>
-						)}
-						<textarea
-							value={newMessage}
+						ref={chatFormRef}
+						onSubmit={onNewMessage}
+						className="shrink-0 p-4 pb-5 bg-transparent"
+						{...chatDragHandlers}
+					>
+						<input
+							ref={imageInputRef}
+							type="file"
+							accept={SUPPORTED_IMAGE_MIME_TYPES.join(',')}
+							multiple
 							onChange={(e) => {
-								setNewMessage(e.target.value);
-								const ta = e.currentTarget;
-								ta.style.height = 'auto';
-								ta.style.height = Math.min(ta.scrollHeight, 120) + 'px';
+								const files = Array.from(e.target.files || []);
+								if (files.length > 0) {
+									addImages(files);
+								}
+								e.target.value = '';
 							}}
+							className="hidden"
+							disabled={isChatDisabled}
+						/>
+						<div className="relative">
+							{isChatDragging && (
+								<div className="absolute inset-0 flex items-center justify-center bg-accent/10 backdrop-blur-sm rounded-xl z-50 pointer-events-none">
+									<p className="text-accent font-medium">
+										Drop images here
+									</p>
+								</div>
+							)}
+							{images.length > 0 && (
+								<div className="mb-2">
+									<ImageAttachmentPreview
+										images={images}
+										onRemove={removeImage}
+										compact
+									/>
+								</div>
+							)}
+							<textarea
+								value={newMessage}
+								onChange={(e) => {
+									setNewMessage(e.target.value);
+									const ta = e.currentTarget;
+									ta.style.height = 'auto';
+									ta.style.height =
+										Math.min(ta.scrollHeight, 120) + 'px';
+								}}
 								onKeyDown={(e) => {
 									if (e.key === 'Enter') {
 										if (!e.shiftKey) {
@@ -689,30 +740,41 @@ export default function Chat() {
 								style={{
 									// Auto-resize based on content
 									height: 'auto',
-									minHeight: '36px'
+									minHeight: '36px',
 								}}
 								ref={(textarea) => {
 									if (textarea) {
 										// Auto-resize textarea based on content
 										textarea.style.height = 'auto';
-										textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+										textarea.style.height =
+											Math.min(
+												textarea.scrollHeight,
+												120,
+											) + 'px';
 									}
 								}}
 							/>
 							<div className="absolute right-1.5 bottom-2.5 flex items-center gap-1">
 								<button
 									type="button"
-									onClick={() => imageInputRef.current?.click()}
+									onClick={() =>
+										imageInputRef.current?.click()
+									}
 									disabled={isChatDisabled || isProcessing}
 									className="p-1.5 rounded-md hover:bg-bg-3 text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
 									aria-label="Upload image"
 									title="Upload image"
 								>
-									<ImageIcon className="size-4" strokeWidth={1.5} />
+									<ImageIcon
+										className="size-4"
+										strokeWidth={1.5}
+									/>
 								</button>
 								<button
 									type="submit"
-									disabled={!newMessage.trim() || isChatDisabled}
+									disabled={
+										!newMessage.trim() || isChatDisabled
+									}
 									className="p-1.5 rounded-md bg-accent/90 hover:bg-accent/80 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-transparent text-white disabled:text-text-primary transition-colors"
 								>
 									<ArrowRight className="size-4" />
@@ -724,13 +786,13 @@ export default function Chat() {
 
 				<AnimatePresence>
 					{showMainView && (
-					<motion.div
-						layout="position"
-						className="flex-1 flex shrink-0 basis-0 p-4 pl-0 ml-2 z-30 min-h-0"
-						initial={{ opacity: 0, scale: 0.84 }}
-						animate={{ opacity: 1, scale: 1 }}
-						transition={{ duration: 0.3, ease: 'easeInOut' }}
-					>
+						<motion.div
+							layout="position"
+							className="flex-1 flex shrink-0 basis-0 p-4 pl-0 ml-2 z-30 min-h-0"
+							initial={{ opacity: 0, scale: 0.84 }}
+							animate={{ opacity: 1, scale: 1 }}
+							transition={{ duration: 0.3, ease: 'easeInOut' }}
+						>
 							{view === 'preview' && previewUrl && (
 								<div className="flex-1 flex flex-col bg-bg-3 rounded-xl shadow-md shadow-bg-2 overflow-hidden border border-border-primary">
 									<div className="grid grid-cols-3 px-2 h-10 border-b bg-bg-2">
@@ -780,7 +842,9 @@ export default function Chat() {
 											</button> */}
 											<ModelConfigInfo
 												configs={modelConfigs}
-												onRequestConfigs={handleRequestConfigs}
+												onRequestConfigs={
+													handleRequestConfigs
+												}
 												loading={loadingConfigs}
 											/>
 											<button
@@ -789,21 +853,25 @@ export default function Chat() {
 														? 'bg-gray-800 hover:bg-gray-900 text-white'
 														: 'bg-gray-600 text-gray-400 cursor-not-allowed'
 												}`}
-												onClick={isGitHubExportReady ? githubExport.openModal : undefined}
+												onClick={
+													isGitHubExportReady
+														? githubExport.openModal
+														: undefined
+												}
 												disabled={!isGitHubExportReady}
 												title={
 													isGitHubExportReady
-														? "Export to GitHub"
+														? 'Export to GitHub'
 														: !isPhase1Complete
-															? "Complete Phase 1 to enable GitHub export"
-															: "Waiting for chat session to initialize..."
+															? 'Complete Phase 1 to enable GitHub export'
+															: 'Waiting for chat session to initialize...'
 												}
 												aria-label={
 													isGitHubExportReady
-														? "Export to GitHub"
+														? 'Export to GitHub'
 														: !isPhase1Complete
-															? "GitHub export disabled - complete Phase 1 first"
-															: "GitHub export disabled - waiting for chat session"
+															? 'GitHub export disabled - complete Phase 1 first'
+															: 'GitHub export disabled - waiting for chat session'
 												}
 											>
 												<Github className="size-3" />
@@ -867,8 +935,7 @@ export default function Chat() {
 								</div>
 							)}
 
-
-                            {/* Disabled terminal for now */}
+							{/* Disabled terminal for now */}
 							{/* {view === 'terminal' && (
 								<div className="flex-1 flex flex-col bg-bg-3 rounded-xl shadow-md shadow-bg-2 overflow-hidden border border-border-primary">
 									<div className="grid grid-cols-3 px-2 h-10 bg-bg-2 border-b">
@@ -998,7 +1065,9 @@ export default function Chat() {
 												</button> */}
 												<ModelConfigInfo
 													configs={modelConfigs}
-													onRequestConfigs={handleRequestConfigs}
+													onRequestConfigs={
+														handleRequestConfigs
+													}
 													loading={loadingConfigs}
 												/>
 												<button

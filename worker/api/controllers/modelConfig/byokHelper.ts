@@ -125,7 +125,7 @@ export function getPlatformEnabledProviders(env: Env): string[] {
  */
 export function getPlatformAvailableModels(env: Env): AIModels[] {
 	const platformEnabledProviders = getPlatformEnabledProviders(env);
-    console.log("Platform enabled providers: ", platformEnabledProviders);
+	console.log('Platform enabled providers: ', platformEnabledProviders);
 
 	// Filter models to only include those from providers with platform API keys
 	return Object.values(AIModels).filter((model) => {

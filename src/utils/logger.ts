@@ -1,4 +1,3 @@
- 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LoggerOptions {
@@ -26,7 +25,9 @@ export class Logger {
 	}
 
 	private shouldLog(level: LogLevel): boolean {
-		return this.enabled && Logger.levels[level] >= Logger.levels[this.level];
+		return (
+			this.enabled && Logger.levels[level] >= Logger.levels[this.level]
+		);
 	}
 
 	private formatMessage(_level: LogLevel, args: unknown[]): unknown[] {

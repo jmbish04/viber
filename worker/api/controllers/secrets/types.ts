@@ -9,15 +9,15 @@ import { SecretTemplate } from '../../../types/secretsTemplates';
  * Response data for getSecrets
  */
 export interface SecretsData {
-    secrets: EncryptedSecret[];
+	secrets: EncryptedSecret[];
 }
 
 /**
  * Response data for storeSecret
  */
 export interface SecretStoreData {
-    secret: EncryptedSecret;
-    message: string;
+	secret: EncryptedSecret;
+	message: string;
 }
 
 /**
@@ -25,12 +25,12 @@ export interface SecretStoreData {
  * Simple message response
  */
 export interface SecretDeleteData {
-    message: string;
+	message: string;
 }
 
 /**
  * Response data for getTemplates
  */
 export interface SecretTemplatesData {
-    templates: SecretTemplate[];
+	templates: SecretTemplate[];
 }

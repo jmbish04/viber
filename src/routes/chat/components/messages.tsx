@@ -48,20 +48,24 @@ export function AIMessage({
 								{ev.status === 'start' && (
 									<LoaderCircle className="size-3 animate-spin" />
 								)}
-								{ev.status === 'success' && <Check className="size-3" />}
-								{ev.status === 'error' && <AlertTriangle className="size-3" />}
+								{ev.status === 'success' && (
+									<Check className="size-3" />
+								)}
+								{ev.status === 'error' && (
+									<AlertTriangle className="size-3" />
+								)}
 								<span className="font-mono tracking-tight">
 									{ev.status === 'start' && 'Running'}
 									{ev.status === 'success' && 'Completed'}
-									{ev.status === 'error' && 'Error'}
-									{' '}
-									{ev.name}
+									{ev.status === 'error' && 'Error'} {ev.name}
 								</span>
 							</div>
 						))}
 					</div>
 				)}
-				<Markdown className={clsx('a-tag', isThinking ? 'animate-pulse' : '')}>
+				<Markdown
+					className={clsx('a-tag', isThinking ? 'animate-pulse' : '')}
+				>
 					{message}
 				</Markdown>
 			</div>

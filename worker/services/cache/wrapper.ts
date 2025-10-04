@@ -16,7 +16,7 @@ type ControllerMethod<T extends BaseController> = (
 	request: Request,
 	env: Env,
 	ctx: ExecutionContext,
-	context: RouteContext
+	context: RouteContext,
 ) => Promise<Response>;
 
 /**
@@ -25,7 +25,7 @@ type ControllerMethod<T extends BaseController> = (
  */
 export function withCache<T extends BaseController>(
 	method: ControllerMethod<T>,
-	options: CacheOptions
+	options: CacheOptions,
 ): ControllerMethod<T> {
 	const cacheService = new CacheService();
 
@@ -34,13 +34,17 @@ export function withCache<T extends BaseController>(
 		request: Request,
 		env: Env,
 		ctx: ExecutionContext,
-		context: RouteContext
+		context: RouteContext,
 	): Promise<Response> {
 		// Try to get user for cache key differentiation
 		let userId = context?.user?.id;
 
 		// For public endpoints, try to get optional user if not already available
-		if (!userId && 'getOptionalUser' in this && typeof this.getOptionalUser === 'function') {
+		if (
+			!userId &&
+			'getOptionalUser' in this &&
+			typeof this.getOptionalUser === 'function'
+		) {
 			try {
 				const user = await this.getOptionalUser(request, env);
 				userId = user?.id;
@@ -56,7 +60,7 @@ export function withCache<T extends BaseController>(
 		return cacheService.withCache(
 			cacheKeyOrRequest,
 			() => method.call(this, request, env, ctx, context),
-			{ ttlSeconds: options.ttlSeconds, tags: options.tags }
+			{ ttlSeconds: options.ttlSeconds, tags: options.tags },
 		);
 	};
 }

@@ -3,11 +3,11 @@
 declare namespace Cloudflare {
 	interface Env {
 		VibecoderStore: KVNamespace;
-		TEMPLATES_REPOSITORY: "https://github.com/cloudflare/vibesdk-templates";
-		ALLOWED_EMAIL: "";
-		DISPATCH_NAMESPACE: "vibesdk-default-namespace";
-		CLOUDFLARE_AI_GATEWAY: "vibesdk-gateway";
-		ENABLE_READ_REPLICAS: "true";
+		TEMPLATES_REPOSITORY: 'https://github.com/cloudflare/vibesdk-templates';
+		ALLOWED_EMAIL: '';
+		DISPATCH_NAMESPACE: 'vibesdk-default-namespace';
+		CLOUDFLARE_AI_GATEWAY: 'vibesdk-gateway';
+		ENABLE_READ_REPLICAS: 'true';
 		ANTHROPIC_API_KEY: string;
 		OPENAI_API_KEY: string;
 		GOOGLE_AI_STUDIO_API_KEY: string;
@@ -29,7 +29,7 @@ declare namespace Cloudflare {
 		JWT_SECRET: string;
 		ENTROPY_KEY: string;
 		ENVIRONMENT: string;
-        USE_TUNNEL_FOR_PREVIEW: boolean;
+		USE_TUNNEL_FOR_PREVIEW: boolean;
 		SECRETS_ENCRYPTION_KEY: string;
 		MAX_SANDBOX_INSTANCES: string;
 		SANDBOX_INSTANCE_TYPE: string;
@@ -41,9 +41,15 @@ declare namespace Cloudflare {
 		CF_ACCESS_ID: string;
 		CF_ACCESS_SECRET: string;
 		SENTRY_DSN: string;
-		CodeGenObject: DurableObjectNamespace<import("./worker/index").CodeGeneratorAgent>;
-		Sandbox: DurableObjectNamespace<import("./worker/index").UserAppSandboxService>;
-		DORateLimitStore: DurableObjectNamespace<import("./worker/index").DORateLimitStore>;
+		CodeGenObject: DurableObjectNamespace<
+			import('./worker/index').CodeGeneratorAgent
+		>;
+		Sandbox: DurableObjectNamespace<
+			import('./worker/index').UserAppSandboxService
+		>;
+		DORateLimitStore: DurableObjectNamespace<
+			import('./worker/index').DORateLimitStore
+		>;
 		TEMPLATES_BUCKET: R2Bucket;
 		DB: D1Database;
 		DISPATCHER: DispatchNamespace;
@@ -57,8 +63,52 @@ declare namespace Cloudflare {
 }
 interface Env extends Cloudflare.Env {}
 type StringifyValues<EnvType extends Record<string, unknown>> = {
-	[Binding in keyof EnvType]: EnvType[Binding] extends string ? EnvType[Binding] : string;
+	[Binding in keyof EnvType]: EnvType[Binding] extends string
+		? EnvType[Binding]
+		: string;
 };
 declare namespace NodeJS {
-	interface ProcessEnv extends StringifyValues<Pick<Cloudflare.Env, "TEMPLATES_REPOSITORY" | "ALLOWED_EMAIL" | "DISPATCH_NAMESPACE" | "CLOUDFLARE_AI_GATEWAY" | "ENABLE_READ_REPLICAS" | "ANTHROPIC_API_KEY" | "OPENAI_API_KEY" | "GOOGLE_AI_STUDIO_API_KEY" | "OPENROUTER_API_KEY" | "CEREBRAS_API_KEY" | "GROQ_API_KEY" | "SANDBOX_SERVICE_API_KEY" | "SANDBOX_SERVICE_TYPE" | "SANDBOX_SERVICE_URL" | "CLOUDFLARE_API_TOKEN" | "CLOUDFLARE_ACCOUNT_ID" | "CLOUDFLARE_AI_GATEWAY_URL" | "CLOUDFLARE_AI_GATEWAY_TOKEN" | "SERPAPI_KEY" | "GOOGLE_CLIENT_SECRET" | "GOOGLE_CLIENT_ID" | "GITHUB_CLIENT_ID" | "GITHUB_CLIENT_SECRET" | "JWT_SECRET" | "ENTROPY_KEY" | "ENVIRONMENT" | "SECRETS_ENCRYPTION_KEY" | "MAX_SANDBOX_INSTANCES" | "SANDBOX_INSTANCE_TYPE" | "CUSTOM_DOMAIN" | "CUSTOM_PREVIEW_DOMAIN" | "ALLOCATION_STRATEGY" | "GITHUB_EXPORTER_CLIENT_ID" | "GITHUB_EXPORTER_CLIENT_SECRET" | "CF_ACCESS_ID" | "CF_ACCESS_SECRET" | "SENTRY_DSN">> {}
+	interface ProcessEnv
+		extends StringifyValues<
+			Pick<
+				Cloudflare.Env,
+				| 'TEMPLATES_REPOSITORY'
+				| 'ALLOWED_EMAIL'
+				| 'DISPATCH_NAMESPACE'
+				| 'CLOUDFLARE_AI_GATEWAY'
+				| 'ENABLE_READ_REPLICAS'
+				| 'ANTHROPIC_API_KEY'
+				| 'OPENAI_API_KEY'
+				| 'GOOGLE_AI_STUDIO_API_KEY'
+				| 'OPENROUTER_API_KEY'
+				| 'CEREBRAS_API_KEY'
+				| 'GROQ_API_KEY'
+				| 'SANDBOX_SERVICE_API_KEY'
+				| 'SANDBOX_SERVICE_TYPE'
+				| 'SANDBOX_SERVICE_URL'
+				| 'CLOUDFLARE_API_TOKEN'
+				| 'CLOUDFLARE_ACCOUNT_ID'
+				| 'CLOUDFLARE_AI_GATEWAY_URL'
+				| 'CLOUDFLARE_AI_GATEWAY_TOKEN'
+				| 'SERPAPI_KEY'
+				| 'GOOGLE_CLIENT_SECRET'
+				| 'GOOGLE_CLIENT_ID'
+				| 'GITHUB_CLIENT_ID'
+				| 'GITHUB_CLIENT_SECRET'
+				| 'JWT_SECRET'
+				| 'ENTROPY_KEY'
+				| 'ENVIRONMENT'
+				| 'SECRETS_ENCRYPTION_KEY'
+				| 'MAX_SANDBOX_INSTANCES'
+				| 'SANDBOX_INSTANCE_TYPE'
+				| 'CUSTOM_DOMAIN'
+				| 'CUSTOM_PREVIEW_DOMAIN'
+				| 'ALLOCATION_STRATEGY'
+				| 'GITHUB_EXPORTER_CLIENT_ID'
+				| 'GITHUB_EXPORTER_CLIENT_SECRET'
+				| 'CF_ACCESS_ID'
+				| 'CF_ACCESS_SECRET'
+				| 'SENTRY_DSN'
+			>
+		> {}
 }

@@ -1,13 +1,22 @@
-import type { ClientReportedErrorType, CodeReviewOutputType, FileConceptType, FileOutputType } from "../agents/schemas";
-import type { CodeGenState } from "../agents/core/state";
-import type { CodeIssue, RuntimeError, StaticAnalysisResponse } from "../services/sandbox/sandboxTypes";
-import type { CodeFixResult } from "../services/code-fixer";
-import { IssueReport } from "../agents/domain/values/IssueReport";
+import type {
+	ClientReportedErrorType,
+	CodeReviewOutputType,
+	FileConceptType,
+	FileOutputType,
+} from '../agents/schemas';
+import type { CodeGenState } from '../agents/core/state';
+import type {
+	CodeIssue,
+	RuntimeError,
+	StaticAnalysisResponse,
+} from '../services/sandbox/sandboxTypes';
+import type { CodeFixResult } from '../services/code-fixer';
+import { IssueReport } from '../agents/domain/values/IssueReport';
 import type { RateLimitExceededError } from 'shared/types/errors';
 
 type ErrorMessage = {
-    type: 'error';
-    error: string;
+	type: 'error';
+	error: string;
 };
 
 type StateMessage = {
@@ -17,7 +26,7 @@ type StateMessage = {
 
 type RateLimitErrorMessage = {
 	type: 'rate_limit_error';
-    error: RateLimitExceededError;
+	error: RateLimitExceededError;
 };
 
 type GenerationStartedMessage = {
@@ -114,9 +123,9 @@ export type CodeFixEdits = {
 };
 
 type StaticAnalysisResults = {
-    type: 'static_analysis_results';
-    staticAnalysis: StaticAnalysisResponse;
-}
+	type: 'static_analysis_results';
+	staticAnalysis: StaticAnalysisResponse;
+};
 
 type PhaseGeneratingMessage = {
 	type: 'phase_generating';
@@ -126,8 +135,8 @@ type PhaseGeneratingMessage = {
 		description: string;
 		files: FileConceptType[];
 	};
-    issues?: IssueReport;
-    userSuggestions?: string[];
+	issues?: IssueReport;
+	userSuggestions?: string[];
 };
 
 type PhaseGeneratedMessage = {
@@ -148,7 +157,7 @@ type PhaseImplementingMessage = {
 		description: string;
 		files: FileConceptType[];
 	};
-    issues?: IssueReport;
+	issues?: IssueReport;
 };
 
 type PhaseImplementedMessage = {
@@ -306,14 +315,14 @@ type ConversationResponseMessage = {
 type DeterministicCodeFixStartedMessage = {
 	type: 'deterministic_code_fix_started';
 	message: string;
-    issues: CodeIssue[];
+	issues: CodeIssue[];
 };
 
 type DeterministicCodeFixCompletedMessage = {
 	type: 'deterministic_code_fix_completed';
 	message: string;
-    fixResult: CodeFixResult;
-    issues: CodeIssue[];
+	fixResult: CodeFixResult;
+	issues: CodeIssue[];
 };
 
 type ModelConfigsInfoMessage = {
@@ -325,21 +334,27 @@ type ModelConfigsInfoMessage = {
 			name: string;
 			description: string;
 		}>;
-		userConfigs: Record<string, {
-			name?: string;
-			max_tokens?: number;
-			temperature?: number;
-			reasoning_effort?: string;
-			fallbackModel?: string;
-			isUserOverride?: boolean;
-		}>;
-		defaultConfigs: Record<string, {
-			name?: string;
-			max_tokens?: number;
-			temperature?: number;
-			reasoning_effort?: string;
-			fallbackModel?: string;
-		}>;
+		userConfigs: Record<
+			string,
+			{
+				name?: string;
+				max_tokens?: number;
+				temperature?: number;
+				reasoning_effort?: string;
+				fallbackModel?: string;
+				isUserOverride?: boolean;
+			}
+		>;
+		defaultConfigs: Record<
+			string,
+			{
+				name?: string;
+				max_tokens?: number;
+				temperature?: number;
+				reasoning_effort?: string;
+				fallbackModel?: string;
+			}
+		>;
 	};
 };
 
@@ -381,7 +396,7 @@ export type WebSocketMessage =
 	| CommandExecutingMessage
 	| RuntimeErrorFoundMessage
 	| CodeFixEdits
-    | StaticAnalysisResults
+	| StaticAnalysisResults
 	| PhaseGeneratingMessage
 	| PhaseGeneratedMessage
 	| PhaseImplementingMessage
@@ -402,11 +417,11 @@ export type WebSocketMessage =
 	| GitHubExportCompletedMessage
 	| GitHubExportErrorMessage
 	| ErrorMessage
-    | RateLimitErrorMessage
+	| RateLimitErrorMessage
 	| UserSuggestionsProcessingMessage
 	| ConversationResponseMessage
-    | DeterministicCodeFixStartedMessage
-    | DeterministicCodeFixCompletedMessage
+	| DeterministicCodeFixStartedMessage
+	| DeterministicCodeFixCompletedMessage
 	| ModelConfigsInfoMessage
 	| TerminalCommandMessage
 	| TerminalOutputMessage
@@ -417,8 +432,14 @@ export type WebSocketMessageType = WebSocketMessage['type'];
 
 // A utility type to find the full message object from the union based on its type string.
 // e.g., MessagePayload<'phase_generating'> will resolve to PhaseGeneratingMessage
-type WebSocketMessagePayload<T extends WebSocketMessageType> = Extract<WebSocketMessage, { type: T }>;
+type WebSocketMessagePayload<T extends WebSocketMessageType> = Extract<
+	WebSocketMessage,
+	{ type: T }
+>;
 
 // A utility type to get only the data part of the payload, excluding the 'type' property.
 // This is what your 'data' parameter will be.
-export type WebSocketMessageData<T extends WebSocketMessageType> = Omit<WebSocketMessagePayload<T>, 'type'>;
+export type WebSocketMessageData<T extends WebSocketMessageType> = Omit<
+	WebSocketMessagePayload<T>,
+	'type'
+>;

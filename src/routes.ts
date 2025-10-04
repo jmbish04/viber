@@ -26,15 +26,21 @@ const routes = [
 			},
 			{
 				path: 'profile',
-				element: React.createElement(ProtectedRoute, { children: React.createElement(Profile) }),
+				element: React.createElement(ProtectedRoute, {
+					children: React.createElement(Profile),
+				}),
 			},
 			{
 				path: 'settings',
-				element: React.createElement(ProtectedRoute, { children: React.createElement(Settings) }),
+				element: React.createElement(ProtectedRoute, {
+					children: React.createElement(Settings),
+				}),
 			},
 			{
 				path: 'apps',
-				element: React.createElement(ProtectedRoute, { children: React.createElement(AppsPage) }),
+				element: React.createElement(ProtectedRoute, {
+					children: React.createElement(AppsPage),
+				}),
 			},
 			{
 				path: 'app/:id',

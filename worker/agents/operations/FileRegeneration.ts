@@ -5,9 +5,9 @@ import { FileOutputType } from '../schemas';
 import { AGENT_CONFIG } from '../inferutils/config';
 
 export interface FileRegenerationInputs {
-    file: FileOutputType;
-    issues: string[];
-    retryIndex: number;
+	file: FileOutputType;
+	issues: string[];
+	retryIndex: number;
 }
 
 const SYSTEM_PROMPT = `You are a Senior Software Engineer at Cloudflare specializing in surgical code fixes. Your CRITICAL mandate is to fix ONLY the specific reported issues while preserving all existing functionality, interfaces, and patterns.
@@ -33,7 +33,7 @@ const SYSTEM_PROMPT = `You are a Senior Software Engineer at Cloudflare speciali
 - Preserve existing React patterns (hooks, effects, state)
 - Keep the same component structure and props
 
-Your goal is zero regression - fix the issue without breaking anything else.`
+Your goal is zero regression - fix the issue without breaking anything else.`;
 
 const USER_PROMPT = `<SURGICAL_FIX_REQUEST: {{filePath}}>
 
@@ -106,32 +106,47 @@ useEffect(() => {
 - If an issue cannot be fixed surgically, explain why instead of forcing a fix
 </FIX_PROTOCOL>`;
 
-export class FileRegenerationOperation extends AgentOperation<FileRegenerationInputs, FileGenerationOutputType> {    
-    async execute(
-        inputs: FileRegenerationInputs,
-        options: OperationOptions
-    ): Promise<FileGenerationOutputType> {
-        try {
-            // Use realtime code fixer to fix the file with enhanced surgical fix prompts
-            const realtimeCodeFixer = new RealtimeCodeFixer(options.env, options.inferenceContext, false, undefined, AGENT_CONFIG.fileRegeneration, SYSTEM_PROMPT, USER_PROMPT);
-            const fixedFile = await realtimeCodeFixer.run(
-                inputs.file, {
-                    previousFiles: options.context.allFiles,
-                    query: options.context.query,
-                    template: options.context.templateDetails
-                },
-                undefined,
-                inputs.issues,
-                5
-            );
+export class FileRegenerationOperation extends AgentOperation<
+	FileRegenerationInputs,
+	FileGenerationOutputType
+> {
+	async execute(
+		inputs: FileRegenerationInputs,
+		options: OperationOptions,
+	): Promise<FileGenerationOutputType> {
+		try {
+			// Use realtime code fixer to fix the file with enhanced surgical fix prompts
+			const realtimeCodeFixer = new RealtimeCodeFixer(
+				options.env,
+				options.inferenceContext,
+				false,
+				undefined,
+				AGENT_CONFIG.fileRegeneration,
+				SYSTEM_PROMPT,
+				USER_PROMPT,
+			);
+			const fixedFile = await realtimeCodeFixer.run(
+				inputs.file,
+				{
+					previousFiles: options.context.allFiles,
+					query: options.context.query,
+					template: options.context.templateDetails,
+				},
+				undefined,
+				inputs.issues,
+				5,
+			);
 
-            return {
-                ...fixedFile,
-                format: "full_content"
-            };
-        } catch (error) {
-            options.logger.error(`Error fixing file ${inputs.file.filePath}:`, error);
-            throw error;
-        }
-    }
+			return {
+				...fixedFile,
+				format: 'full_content',
+			};
+		} catch (error) {
+			options.logger.error(
+				`Error fixing file ${inputs.file.filePath}:`,
+				error,
+			);
+			throw error;
+		}
+	}
 }

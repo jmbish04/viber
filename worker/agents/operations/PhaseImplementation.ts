@@ -1,35 +1,56 @@
-import { PhaseConceptType, FileOutputType, PhaseConceptSchema } from '../schemas';
+import {
+	PhaseConceptType,
+	FileOutputType,
+	PhaseConceptSchema,
+} from '../schemas';
 import { IssueReport } from '../domain/values/IssueReport';
-import { createUserMessage, createMultiModalUserMessage } from '../inferutils/common';
+import {
+	createUserMessage,
+	createMultiModalUserMessage,
+} from '../inferutils/common';
 import { executeInference } from '../inferutils/infer';
 import { issuesPromptFormatter, PROMPT_UTILS, STRATEGIES } from '../prompts';
 import { CodeGenerationStreamingState } from '../output-formats/streaming-formats/base';
 import { FileProcessing } from '../domain/pure/FileProcessing';
 // import { RealtimeCodeFixer } from '../assistants/realtimeCodeFixer';
-import { AgentOperation, getSystemPromptWithProjectContext, OperationOptions } from '../operations/common';
-import { SCOFFormat, SCOFParsingState } from '../output-formats/streaming-formats/scof';
+import {
+	AgentOperation,
+	getSystemPromptWithProjectContext,
+	OperationOptions,
+} from '../operations/common';
+import {
+	SCOFFormat,
+	SCOFParsingState,
+} from '../output-formats/streaming-formats/scof';
 import { TemplateRegistry } from '../inferutils/schemaFormatters';
-import { IsRealtimeCodeFixerEnabled, RealtimeCodeFixer } from '../assistants/realtimeCodeFixer';
+import {
+	IsRealtimeCodeFixerEnabled,
+	RealtimeCodeFixer,
+} from '../assistants/realtimeCodeFixer';
 import { AGENT_CONFIG } from '../inferutils/config';
 import { CodeSerializerType } from '../utils/codeSerializers';
 import type { UserContext } from '../core/types';
 
 export interface PhaseImplementationInputs {
-    phase: PhaseConceptType
-    issues: IssueReport
-    isFirstPhase: boolean
-    shouldAutoFix: boolean
-    userContext?: UserContext;
-    fileGeneratingCallback: (filePath: string, filePurpose: string) => void
-    fileChunkGeneratedCallback: (filePath: string, chunk: string, format: 'full_content' | 'unified_diff') => void
-    fileClosedCallback: (file: FileOutputType, message: string) => void
+	phase: PhaseConceptType;
+	issues: IssueReport;
+	isFirstPhase: boolean;
+	shouldAutoFix: boolean;
+	userContext?: UserContext;
+	fileGeneratingCallback: (filePath: string, filePurpose: string) => void;
+	fileChunkGeneratedCallback: (
+		filePath: string,
+		chunk: string,
+		format: 'full_content' | 'unified_diff',
+	) => void;
+	fileClosedCallback: (file: FileOutputType, message: string) => void;
 }
 
-export interface PhaseImplementationOutputs{
-    // rawFiles: FileOutputType[]
-    fixedFilePromises: Promise<FileOutputType>[]
-    deploymentNeeded: boolean
-    commands: string[]
+export interface PhaseImplementationOutputs {
+	// rawFiles: FileOutputType[]
+	fixedFilePromises: Promise<FileOutputType>[];
+	deploymentNeeded: boolean;
+	commands: string[];
 }
 
 export const SYSTEM_PROMPT = `<ROLE>
@@ -311,11 +332,11 @@ All your output will be directly saved in the README.md file.
 Do not provide and markdown fence \`\`\` \`\`\` around the content either! Just pure raw markdown content!`;
 
 const formatUserSuggestions = (suggestions?: string[] | null): string => {
-    if (!suggestions || suggestions.length === 0) {
-        return '';
-    }
-    
-    return `
+	if (!suggestions || suggestions.length === 0) {
+		return '';
+	}
+
+	return `
 <USER SUGGESTIONS>
 The following client suggestions and feedback have been provided, relayed by our client conversation agent.
 Please incorporate these suggestions **on priority** in the implementation of this phase.
@@ -329,182 +350,273 @@ Try to make small targeted, isolated changes to the codebase to address the user
 };
 
 const specialPhasePromptOverrides: Record<string, string> = {
-    "Finalization and Review": LAST_PHASE_PROMPT,
-}
+	'Finalization and Review': LAST_PHASE_PROMPT,
+};
 
-const userPromptFormatter = (phaseConcept: PhaseConceptType, issues: IssueReport, userSuggestions?: string[]) => {
-    const phaseText = TemplateRegistry.markdown.serialize(
-        phaseConcept,
-        PhaseConceptSchema
-    );
-    
-    const prompt = PROMPT_UTILS.replaceTemplateVariables(specialPhasePromptOverrides[phaseConcept.name] || USER_PROMPT, {
-        phaseText,
-        issues: issuesPromptFormatter(issues),
-        userSuggestions: formatUserSuggestions(userSuggestions)
-    });
-    return PROMPT_UTILS.verifyPrompt(prompt);
-}
+const userPromptFormatter = (
+	phaseConcept: PhaseConceptType,
+	issues: IssueReport,
+	userSuggestions?: string[],
+) => {
+	const phaseText = TemplateRegistry.markdown.serialize(
+		phaseConcept,
+		PhaseConceptSchema,
+	);
 
-export class PhaseImplementationOperation extends AgentOperation<PhaseImplementationInputs, PhaseImplementationOutputs> {
-    async execute(
-        inputs: PhaseImplementationInputs,
-        options: OperationOptions
-    ): Promise<PhaseImplementationOutputs> {
-        const { phase, issues, userContext } = inputs;
-        const { env, logger, context } = options;
-        
-        logger.info(`Generating files for phase: ${phase.name}`, phase.description, "files:", phase.files.map(f => f.path));
-    
-        // Notify phase start
-        const codeGenerationFormat = new SCOFFormat();
-        // Build messages for generation
-        const messages = getSystemPromptWithProjectContext(SYSTEM_PROMPT, context, CodeSerializerType.SCOF);
-        
-        // Create user message with optional images
-        const userPrompt = userPromptFormatter(phase, issues, userContext?.suggestions) + codeGenerationFormat.formatInstructions();
-        const userMessage = userContext?.images && userContext.images.length > 0
-            ? createMultiModalUserMessage(
-                userPrompt,
-                userContext.images.map(img => `data:${img.mimeType};base64,${img.base64Data}`),
-                'high'
-            )
-            : createUserMessage(userPrompt);
-        
-        messages.push(userMessage);
-    
-        // Initialize streaming state
-        const streamingState: CodeGenerationStreamingState = {
-            accumulator: '',
-            completedFiles: new Map(),
-            parsingState: {} as SCOFParsingState
-        };
-    
-        const fixedFilePromises: Promise<FileOutputType>[] = [];
+	const prompt = PROMPT_UTILS.replaceTemplateVariables(
+		specialPhasePromptOverrides[phaseConcept.name] || USER_PROMPT,
+		{
+			phaseText,
+			issues: issuesPromptFormatter(issues),
+			userSuggestions: formatUserSuggestions(userSuggestions),
+		},
+	);
+	return PROMPT_UTILS.verifyPrompt(prompt);
+};
 
-        let modelConfig = AGENT_CONFIG.phaseImplementation;
-        if (inputs.isFirstPhase) {
-            modelConfig = AGENT_CONFIG.firstPhaseImplementation;
-        }
+export class PhaseImplementationOperation extends AgentOperation<
+	PhaseImplementationInputs,
+	PhaseImplementationOutputs
+> {
+	async execute(
+		inputs: PhaseImplementationInputs,
+		options: OperationOptions,
+	): Promise<PhaseImplementationOutputs> {
+		const { phase, issues, userContext } = inputs;
+		const { env, logger, context } = options;
 
-        const shouldEnableRealtimeCodeFixer = inputs.shouldAutoFix && IsRealtimeCodeFixerEnabled(options.inferenceContext);
-    
-        // Execute inference with streaming
-        await executeInference({
-            env: env,
-            agentActionName: "phaseImplementation",
-            context: options.inferenceContext,
-            messages,
-            modelConfig,
-            stream: {
-                chunk_size: 256,
-                onChunk: (chunk: string) => {
-                    codeGenerationFormat.parseStreamingChunks(
-                        chunk,
-                        streamingState,
-                        // File generation started
-                        (filePath: string) => {
-                            logger.info(`Starting generation of file: ${filePath}`);
-                            inputs.fileGeneratingCallback(filePath, FileProcessing.findFilePurpose(filePath, phase, context.allFiles.reduce((acc, f) => ({ ...acc, [f.filePath]: f }), {})));
-                        },
-                        // Stream file content chunks
-                        (filePath: string, fileChunk: string, format: 'full_content' | 'unified_diff') => {
-                            inputs.fileChunkGeneratedCallback(filePath, fileChunk, format);
-                        },
-                        // onFileClose callback
-                        (filePath: string) => {
-                            logger.info(`Completed generation of file: ${filePath}`);
-                            const completedFile = streamingState.completedFiles.get(filePath);
-                            if (!completedFile) {
-                                logger.error(`Completed file not found: ${filePath}`);
-                                return;
-                            }
-    
-                            // Process the file contents
-                            const originalContents = context.allFiles.find(f => f.filePath === filePath)?.fileContents || '';
-                            completedFile.fileContents = FileProcessing.processGeneratedFileContents(
-                                completedFile,
-                                originalContents,
-                                logger
-                            );
-    
-                            const generatedFile: FileOutputType = {
-                                ...completedFile,
-                                filePurpose: FileProcessing.findFilePurpose(
-                                    filePath, 
-                                    phase, 
-                                    context.allFiles.reduce((acc, f) => ({ ...acc, [f.filePath]: f }), {})
-                                )
-                            };
+		logger.info(
+			`Generating files for phase: ${phase.name}`,
+			phase.description,
+			'files:',
+			phase.files.map((f) => f.path),
+		);
 
-                            if (shouldEnableRealtimeCodeFixer && generatedFile.fileContents.split('\n').length > 50) {
-                                // Call realtime code fixer immediately - this is the "realtime" aspect
-                                const realtimeCodeFixer = new RealtimeCodeFixer(env, options.inferenceContext);
-                                const fixPromise = realtimeCodeFixer.run(
-                                    generatedFile, 
-                                    {
-                                        // previousFiles: previousFiles,
-                                        query: context.query,
-                                        template: context.templateDetails
-                                    },
-                                    phase
-                                );
-                                fixedFilePromises.push(fixPromise);
-                            } else {
-                                fixedFilePromises.push(Promise.resolve(generatedFile));
-                            }
-    
-                            inputs.fileClosedCallback(generatedFile, `Completed generation of ${filePath}`);
-                        }
-                    );
-                }
-            }
-        });
+		// Notify phase start
+		const codeGenerationFormat = new SCOFFormat();
+		// Build messages for generation
+		const messages = getSystemPromptWithProjectContext(
+			SYSTEM_PROMPT,
+			context,
+			CodeSerializerType.SCOF,
+		);
 
-        // // Extract commands from the generated files
-        // const commands = extractCommands(results.string, true);
-        const commands = streamingState.parsingState.extractedInstallCommands;
+		// Create user message with optional images
+		const userPrompt =
+			userPromptFormatter(phase, issues, userContext?.suggestions) +
+			codeGenerationFormat.formatInstructions();
+		const userMessage =
+			userContext?.images && userContext.images.length > 0
+				? createMultiModalUserMessage(
+						userPrompt,
+						userContext.images.map(
+							(img) =>
+								`data:${img.mimeType};base64,${img.base64Data}`,
+						),
+						'high',
+					)
+				: createUserMessage(userPrompt);
 
-        logger.info("Files generated for phase:", phase.name, "with", fixedFilePromises.length, "files being fixed in real-time and extracted install commands:", commands);
-    
-        // Return generated files for validation and deployment
-        return {
-            fixedFilePromises,
-            deploymentNeeded: fixedFilePromises.length > 0,
-            commands,
-        };
-    }
+		messages.push(userMessage);
 
-    async generateReadme(options: OperationOptions): Promise<FileOutputType> {
-        const { env, logger, context } = options;
-        logger.info("Generating README.md for the project");
+		// Initialize streaming state
+		const streamingState: CodeGenerationStreamingState = {
+			accumulator: '',
+			completedFiles: new Map(),
+			parsingState: {} as SCOFParsingState,
+		};
 
-        try {
-            let readmePrompt = README_GENERATION_PROMPT;
-            const messages = [...getSystemPromptWithProjectContext(SYSTEM_PROMPT, context, CodeSerializerType.SCOF), createUserMessage(readmePrompt)];
+		const fixedFilePromises: Promise<FileOutputType>[] = [];
 
-            const results = await executeInference({
-                env: env,
-                messages,
-                agentActionName: "projectSetup",
-                context: options.inferenceContext,
-            });
+		let modelConfig = AGENT_CONFIG.phaseImplementation;
+		if (inputs.isFirstPhase) {
+			modelConfig = AGENT_CONFIG.firstPhaseImplementation;
+		}
 
-            if (!results || !results.string) {
-                logger.error('Failed to generate README.md content');
-                throw new Error('Failed to generate README.md content');
-            }
+		const shouldEnableRealtimeCodeFixer =
+			inputs.shouldAutoFix &&
+			IsRealtimeCodeFixerEnabled(options.inferenceContext);
 
-            logger.info('Generated README.md content successfully');
+		// Execute inference with streaming
+		await executeInference({
+			env: env,
+			agentActionName: 'phaseImplementation',
+			context: options.inferenceContext,
+			messages,
+			modelConfig,
+			stream: {
+				chunk_size: 256,
+				onChunk: (chunk: string) => {
+					codeGenerationFormat.parseStreamingChunks(
+						chunk,
+						streamingState,
+						// File generation started
+						(filePath: string) => {
+							logger.info(
+								`Starting generation of file: ${filePath}`,
+							);
+							inputs.fileGeneratingCallback(
+								filePath,
+								FileProcessing.findFilePurpose(
+									filePath,
+									phase,
+									context.allFiles.reduce(
+										(acc, f) => ({
+											...acc,
+											[f.filePath]: f,
+										}),
+										{},
+									),
+								),
+							);
+						},
+						// Stream file content chunks
+						(
+							filePath: string,
+							fileChunk: string,
+							format: 'full_content' | 'unified_diff',
+						) => {
+							inputs.fileChunkGeneratedCallback(
+								filePath,
+								fileChunk,
+								format,
+							);
+						},
+						// onFileClose callback
+						(filePath: string) => {
+							logger.info(
+								`Completed generation of file: ${filePath}`,
+							);
+							const completedFile =
+								streamingState.completedFiles.get(filePath);
+							if (!completedFile) {
+								logger.error(
+									`Completed file not found: ${filePath}`,
+								);
+								return;
+							}
 
-            return {
-                filePath: 'README.md',
-                fileContents: results.string,
-                filePurpose: 'Project documentation and setup instructions'
-            };
-        } catch (error) {
-            logger.error("Error generating README:", error);
-            throw error;
-        }
-    }
+							// Process the file contents
+							const originalContents =
+								context.allFiles.find(
+									(f) => f.filePath === filePath,
+								)?.fileContents || '';
+							completedFile.fileContents =
+								FileProcessing.processGeneratedFileContents(
+									completedFile,
+									originalContents,
+									logger,
+								);
+
+							const generatedFile: FileOutputType = {
+								...completedFile,
+								filePurpose: FileProcessing.findFilePurpose(
+									filePath,
+									phase,
+									context.allFiles.reduce(
+										(acc, f) => ({
+											...acc,
+											[f.filePath]: f,
+										}),
+										{},
+									),
+								),
+							};
+
+							if (
+								shouldEnableRealtimeCodeFixer &&
+								generatedFile.fileContents.split('\n').length >
+									50
+							) {
+								// Call realtime code fixer immediately - this is the "realtime" aspect
+								const realtimeCodeFixer = new RealtimeCodeFixer(
+									env,
+									options.inferenceContext,
+								);
+								const fixPromise = realtimeCodeFixer.run(
+									generatedFile,
+									{
+										// previousFiles: previousFiles,
+										query: context.query,
+										template: context.templateDetails,
+									},
+									phase,
+								);
+								fixedFilePromises.push(fixPromise);
+							} else {
+								fixedFilePromises.push(
+									Promise.resolve(generatedFile),
+								);
+							}
+
+							inputs.fileClosedCallback(
+								generatedFile,
+								`Completed generation of ${filePath}`,
+							);
+						},
+					);
+				},
+			},
+		});
+
+		// // Extract commands from the generated files
+		// const commands = extractCommands(results.string, true);
+		const commands = streamingState.parsingState.extractedInstallCommands;
+
+		logger.info(
+			'Files generated for phase:',
+			phase.name,
+			'with',
+			fixedFilePromises.length,
+			'files being fixed in real-time and extracted install commands:',
+			commands,
+		);
+
+		// Return generated files for validation and deployment
+		return {
+			fixedFilePromises,
+			deploymentNeeded: fixedFilePromises.length > 0,
+			commands,
+		};
+	}
+
+	async generateReadme(options: OperationOptions): Promise<FileOutputType> {
+		const { env, logger, context } = options;
+		logger.info('Generating README.md for the project');
+
+		try {
+			let readmePrompt = README_GENERATION_PROMPT;
+			const messages = [
+				...getSystemPromptWithProjectContext(
+					SYSTEM_PROMPT,
+					context,
+					CodeSerializerType.SCOF,
+				),
+				createUserMessage(readmePrompt),
+			];
+
+			const results = await executeInference({
+				env: env,
+				messages,
+				agentActionName: 'projectSetup',
+				context: options.inferenceContext,
+			});
+
+			if (!results || !results.string) {
+				logger.error('Failed to generate README.md content');
+				throw new Error('Failed to generate README.md content');
+			}
+
+			logger.info('Generated README.md content successfully');
+
+			return {
+				filePath: 'README.md',
+				fileContents: results.string,
+				filePurpose: 'Project documentation and setup instructions',
+			};
+		} catch (error) {
+			logger.error('Error generating README:', error);
+			throw error;
+		}
+	}
 }

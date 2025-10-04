@@ -25,7 +25,6 @@ export class CacheService {
 		response: Response,
 		options: CacheOptions,
 	): Promise<void> {
-
 		// Convert Headers to a plain object
 		const headersObj: Record<string, string> = {};
 		response.headers.forEach((value, key) => {

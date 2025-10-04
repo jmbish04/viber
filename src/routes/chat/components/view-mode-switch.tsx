@@ -8,7 +8,7 @@ export function ViewModeSwitch({
 	previewAvailable = false,
 	showTooltip = false,
 }: {
-	view: 'preview' | 'editor' | 'blueprint'
+	view: 'preview' | 'editor' | 'blueprint';
 	onChange: (mode: 'preview' | 'editor' | 'blueprint') => void;
 	previewAvailable: boolean;
 	showTooltip: boolean;

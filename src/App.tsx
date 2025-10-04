@@ -7,18 +7,18 @@ import { AppLayout } from './components/layout/app-layout';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 export default function App() {
-  return (
-    <ErrorBoundary>
-      <ThemeProvider>
-        <AuthProvider>
-          <AuthModalProvider>
-            <AppLayout>
-              <Outlet />
-            </AppLayout>
-            <Toaster richColors position="top-right" />
-          </AuthModalProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
-  );
+	return (
+		<ErrorBoundary>
+			<ThemeProvider>
+				<AuthProvider>
+					<AuthModalProvider>
+						<AppLayout>
+							<Outlet />
+						</AppLayout>
+						<Toaster richColors position="top-right" />
+					</AuthModalProvider>
+				</AuthProvider>
+			</ThemeProvider>
+		</ErrorBoundary>
+	);
 }

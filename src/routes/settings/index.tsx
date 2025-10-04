@@ -4,11 +4,11 @@ import {
 	Eye,
 	EyeOff,
 	Github,
-    Smartphone,
+	Smartphone,
 	Trash2,
 	Key,
 	Lock,
-    Settings,
+	Settings,
 } from 'lucide-react';
 import { ModelConfigTabs } from '@/components/model-config-tabs';
 import type {
@@ -220,7 +220,8 @@ export default function SettingsPage() {
 				setDefaultConfigs(response.data.defaults || {});
 			} else {
 				throw new Error(
-					response.error?.message || 'Failed to load model configurations',
+					response.error?.message ||
+						'Failed to load model configurations',
 				);
 			}
 		} catch (error) {
@@ -508,7 +509,7 @@ export default function SettingsPage() {
 		if (user) {
 			loadActiveSessions();
 			loadModelConfigs();
-            loadSecretTemplates();
+			loadSecretTemplates();
 		}
 	}, [user]);
 
@@ -891,12 +892,12 @@ export default function SettingsPage() {
 										size="sm"
 										variant="outline"
 										onClick={() => setByokModalOpen(true)}
-                                        disabled // DISABLED: BYOK Disabled for security reasons
+										disabled // DISABLED: BYOK Disabled for security reasons
 										className="gap-2"
 									>
 										<Key className="h-4 w-4" />
 										{/* Manage BYOK Keys */}
-                                        Coming Soon
+										Coming Soon
 									</Button>
 								</div>
 
@@ -915,7 +916,10 @@ export default function SettingsPage() {
 												<p className="text-sm text-text-tertiary">
 													{/* Add your LLM keys to use
 													your own billing */}
-                                                    Coming Soon: You would be able to add your own LLM keys to bypass rate limits from here.
+													Coming Soon: You would be
+													able to add your own LLM
+													keys to bypass rate limits
+													from here.
 												</p>
 											</div>
 										);
@@ -1774,7 +1778,9 @@ export default function SettingsPage() {
 
 						<div className="flex items-center justify-between">
 							<div>
-								<p className="font-medium text-text-primary">Delete Account</p>
+								<p className="font-medium text-text-primary">
+									Delete Account
+								</p>
 								<p className="text-sm text-text-tertiary">
 									Permanently delete your account and all data
 								</p>

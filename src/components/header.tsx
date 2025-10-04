@@ -23,9 +23,7 @@ export function Header({
 				</Link>
 			</h1>
 			<div className="flex-1"></div>
-			<div className="flex items-center gap-4">
-				{children}
-			</div>
+			<div className="flex items-center gap-4">{children}</div>
 		</header>
 	);
 }

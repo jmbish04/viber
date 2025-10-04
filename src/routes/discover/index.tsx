@@ -11,12 +11,24 @@ export default function DiscoverPage() {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	// Derive initial sort from URL or localStorage, fallback to 'popular'
-	const allowedSorts: AppSortOption[] = ['recent', 'popular', 'trending', 'starred'];
+	const allowedSorts: AppSortOption[] = [
+		'recent',
+		'popular',
+		'trending',
+		'starred',
+	];
 	const sortParam = searchParams.get('sort') as AppSortOption | null;
-	const savedSort = (typeof localStorage !== 'undefined' ? localStorage.getItem('discover.sort') : null) as AppSortOption | null;
-	const initialSort: AppSortOption = (sortParam && allowedSorts.includes(sortParam))
-		? sortParam
-		: (savedSort && allowedSorts.includes(savedSort) ? savedSort : 'popular');
+	const savedSort = (
+		typeof localStorage !== 'undefined'
+			? localStorage.getItem('discover.sort')
+			: null
+	) as AppSortOption | null;
+	const initialSort: AppSortOption =
+		sortParam && allowedSorts.includes(sortParam)
+			? sortParam
+			: savedSort && allowedSorts.includes(savedSort)
+				? savedSort
+				: 'popular';
 
 	const {
 		// Filter state
@@ -83,21 +95,28 @@ export default function DiscoverPage() {
 							onFrameworkChange={handleFrameworkChange}
 							onPeriodChange={handlePeriodChange}
 							sortBy={sortBy}
-					/>
+						/>
 
 						{/* Sort Tabs */}
-					<AppSortTabs
-						value={sortBy}
-						onValueChange={(v) => {
-							handleSortChange(v);
-							// Persist to URL and localStorage
-							try { localStorage.setItem('discover.sort', v); } catch {}
-							const next = new URLSearchParams(searchParams);
-							next.set('sort', v);
-							setSearchParams(next, { replace: true });
-						}}
-						availableSorts={['recent', 'popular', 'trending', 'starred']}
-					/>
+						<AppSortTabs
+							value={sortBy}
+							onValueChange={(v) => {
+								handleSortChange(v);
+								// Persist to URL and localStorage
+								try {
+									localStorage.setItem('discover.sort', v);
+								} catch {}
+								const next = new URLSearchParams(searchParams);
+								next.set('sort', v);
+								setSearchParams(next, { replace: true });
+							}}
+							availableSorts={[
+								'recent',
+								'popular',
+								'trending',
+								'starred',
+							]}
+						/>
 					</div>
 
 					{/* Unified App List */}

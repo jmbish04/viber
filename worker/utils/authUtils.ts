@@ -2,22 +2,21 @@
  * Centralized Authentication Utilities
  */
 
-import type {  AuthUser } from '../types/auth-types';
+import type { AuthUser } from '../types/auth-types';
 import type { User } from '../database/schema';
 
 /**
  * Extract sessionId from cookie
-*/
+ */
 export function extractSessionId(request: Request): string | null {
-    const cookieHeader = request.headers.get('Cookie');
-       if (!cookieHeader) {
-               return null;
-       }
+	const cookieHeader = request.headers.get('Cookie');
+	if (!cookieHeader) {
+		return null;
+	}
 
-       const cookies = parseCookies(cookieHeader);
-       return cookies['sessionId'];
+	const cookies = parseCookies(cookieHeader);
+	return cookies['sessionId'];
 }
-
 
 /**
  * Token extraction priorities and methods
@@ -249,8 +248,8 @@ export function extractRequestMetadata(request: Request): RequestMetadata {
  */
 export interface SessionResponse {
 	user: AuthUser;
-    sessionId: string;
-    expiresAt: Date | null;
+	sessionId: string;
+	expiresAt: Date | null;
 }
 
 export function mapUserResponse(
@@ -282,7 +281,6 @@ export function formatAuthResponse(
 	expiresAt: Date | null,
 ): SessionResponse {
 	const response: SessionResponse = { user, sessionId, expiresAt };
-    
+
 	return response;
 }
-

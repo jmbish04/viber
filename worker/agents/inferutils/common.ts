@@ -1,4 +1,4 @@
-import { type ChatCompletionMessageToolCall } from 'openai/resources'
+import { type ChatCompletionMessageToolCall } from 'openai/resources';
 
 // Define allowed message roles for type safety
 export type MessageRole = 'system' | 'user' | 'assistant' | 'function' | 'tool';
@@ -73,7 +73,7 @@ export function createMultiModalUserMessage(
 	content: (TextContent | ImageContent)[];
 } {
 	const urls = Array.isArray(imageUrls) ? imageUrls : [imageUrls];
-	
+
 	return {
 		role: 'user' as MessageRole,
 		content: [
@@ -81,7 +81,7 @@ export function createMultiModalUserMessage(
 				type: 'text',
 				text,
 			},
-			...urls.map(url => ({
+			...urls.map((url) => ({
 				type: 'image_url' as const,
 				image_url: {
 					url,

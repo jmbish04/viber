@@ -4,7 +4,7 @@
  * Features 401 response interception to trigger authentication modals
  */
 
-import type{
+import type {
 	ApiResponse,
 	AppsListData,
 	PublicAppsData,
@@ -52,16 +52,15 @@ import type{
 	AuthProvidersResponseData,
 	CsrfTokenResponseData,
 	OAuthProvider,
-    RateLimitErrorResponse,
-    CodeGenArgs,
-    AgentPreviewResponse,
-    PlatformStatusData
+	RateLimitErrorResponse,
+	CodeGenArgs,
+	AgentPreviewResponse,
+	PlatformStatusData,
 } from '@/api-types';
 import {
-    
-    RateLimitExceededError,
-    SecurityError,
-    SecurityErrorType,
+	RateLimitExceededError,
+	SecurityError,
+	SecurityErrorType,
 } from '@/api-types';
 import { toast } from 'sonner';
 
@@ -187,18 +186,22 @@ class ApiClient {
 	 */
 	private async fetchCsrfToken(): Promise<boolean> {
 		try {
-			const response = await fetch(`${this.baseUrl}/api/auth/csrf-token`, {
-				method: 'GET',
-				credentials: 'include',
-			});
-			
+			const response = await fetch(
+				`${this.baseUrl}/api/auth/csrf-token`,
+				{
+					method: 'GET',
+					credentials: 'include',
+				},
+			);
+
 			if (response.ok) {
-				const data: ApiResponse<CsrfTokenResponseData> = await response.json();
+				const data: ApiResponse<CsrfTokenResponseData> =
+					await response.json();
 				if (data.data?.token) {
 					const expiresIn = data.data.expiresIn || 7200; // Default 2 hours
 					this.csrfTokenInfo = {
 						token: data.data.token,
-						expiresAt: Date.now() + (expiresIn * 1000)
+						expiresAt: Date.now() + expiresIn * 1000,
 					};
 					return true;
 				}
@@ -209,7 +212,6 @@ class ApiClient {
 			return false;
 		}
 	}
-
 
 	/**
 	 * Check if CSRF token is expired
@@ -223,15 +225,17 @@ class ApiClient {
 	 * Ensure CSRF token exists and is valid for state-changing requests
 	 */
 	private async ensureCsrfToken(method: string): Promise<boolean> {
-		if (!['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())) {
+		if (
+			!['POST', 'PUT', 'DELETE', 'PATCH'].includes(method.toUpperCase())
+		) {
 			return true;
 		}
-		
+
 		// Fetch new token if none exists or current one is expired
 		if (!this.csrfTokenInfo || this.isCSRFTokenExpired()) {
 			return await this.fetchCsrfToken();
 		}
-		
+
 		return true;
 	}
 
@@ -280,9 +284,14 @@ class ApiClient {
 	private async request<T>(
 		endpoint: string,
 		options: RequestOptions = {},
-        noToast: boolean = false,
+		noToast: boolean = false,
 	): Promise<ApiResponse<T>> {
-		const { data } = await this.requestRaw<T>(endpoint, options, false, noToast);
+		const { data } = await this.requestRaw<T>(
+			endpoint,
+			options,
+			false,
+			noToast,
+		);
 		if (!data) {
 			throw new ApiError(
 				500,
@@ -298,11 +307,11 @@ class ApiClient {
 		endpoint: string,
 		options: RequestOptions = {},
 		isRetry: boolean = false,
-        noToast: boolean = false,
+		noToast: boolean = false,
 	): Promise<{ response: Response; data: ApiResponse<T> | null }> {
 		this.ensureSessionToken();
-		
-		if (!await this.ensureCsrfToken(options.method || 'GET')) {
+
+		if (!(await this.ensureCsrfToken(options.method || 'GET'))) {
 			throw new ApiError(
 				500,
 				'Internal Error',
@@ -331,62 +340,72 @@ class ApiClient {
 
 		try {
 			const response = await fetch(url, config);
-			
+
 			// For streaming responses, skip JSON parsing if response is ok
 			if (options.skipJsonParsing && response.ok) {
 				return { response, data: null };
 			}
-			
-			const data = await response.json() as ApiResponse<T>;
+
+			const data = (await response.json()) as ApiResponse<T>;
 
 			if (!response.ok) {
-                if (
-                    response.status === 401 &&
-                    globalAuthModalTrigger &&
-                    this.shouldTriggerAuthModal(endpoint)
-                ) {
-                    const authContext = this.getAuthContextForEndpoint(endpoint);
-                    globalAuthModalTrigger(authContext);
-                }
+				if (
+					response.status === 401 &&
+					globalAuthModalTrigger &&
+					this.shouldTriggerAuthModal(endpoint)
+				) {
+					const authContext =
+						this.getAuthContextForEndpoint(endpoint);
+					globalAuthModalTrigger(authContext);
+				}
 
-                const errorData = data.error;
-                if (errorData && errorData.type) {
-                       // Send a toast notification for typed errors
-                    if (!noToast) {
-                        toast.error(errorData.message);
-                    }
-                    switch (errorData.type) {
-                        case SecurityErrorType.CSRF_VIOLATION:
-                            // Handle CSRF failures with retry
-                            if (response.status === 403 && !isRetry) {
-                                // Clear expired token and retry with fresh one
-                                this.csrfTokenInfo = null;
-                                return this.requestRaw(endpoint, options, true);
-                            }
-                            break;
-                        case SecurityErrorType.RATE_LIMITED:
-                            // Handle rate limiting
-                            console.log('Rate limited', errorData);
-                            throw RateLimitExceededError.fromRateLimitError((errorData as RateLimitErrorResponse).details);
-                        default:
-                            // Security error
-                            throw new SecurityError(errorData.type, errorData.message);
-                        }
-                    }
-                    console.log("Came here");
+				const errorData = data.error;
+				if (errorData && errorData.type) {
+					// Send a toast notification for typed errors
+					if (!noToast) {
+						toast.error(errorData.message);
+					}
+					switch (errorData.type) {
+						case SecurityErrorType.CSRF_VIOLATION:
+							// Handle CSRF failures with retry
+							if (response.status === 403 && !isRetry) {
+								// Clear expired token and retry with fresh one
+								this.csrfTokenInfo = null;
+								return this.requestRaw(endpoint, options, true);
+							}
+							break;
+						case SecurityErrorType.RATE_LIMITED:
+							// Handle rate limiting
+							console.log('Rate limited', errorData);
+							throw RateLimitExceededError.fromRateLimitError(
+								(errorData as RateLimitErrorResponse).details,
+							);
+						default:
+							// Security error
+							throw new SecurityError(
+								errorData.type,
+								errorData.message,
+							);
+					}
+				}
+				console.log('Came here');
 
-                    throw new ApiError(
-                        response.status,
-                        response.statusText,
-                        data.error?.message || data.message || 'Request failed',
-                        endpoint,
-                    );
+				throw new ApiError(
+					response.status,
+					response.statusText,
+					data.error?.message || data.message || 'Request failed',
+					endpoint,
+				);
 			}
 
-		    return { response, data };
+			return { response, data };
 		} catch (error) {
-			if (error instanceof ApiError || error instanceof RateLimitExceededError || error instanceof SecurityError) {
-                console.error(error);
+			if (
+				error instanceof ApiError ||
+				error instanceof RateLimitExceededError ||
+				error instanceof SecurityError
+			) {
+				console.error(error);
 				throw error;
 			}
 			throw new ApiError(
@@ -402,8 +421,14 @@ class ApiClient {
 	// Platform Status API Methods
 	// ===============================
 
-	async getPlatformStatus(noToast: boolean = true): Promise<ApiResponse<PlatformStatusData>> {
-		return this.request<PlatformStatusData>('/api/status', undefined, noToast);
+	async getPlatformStatus(
+		noToast: boolean = true,
+	): Promise<ApiResponse<PlatformStatusData>> {
+		return this.request<PlatformStatusData>(
+			'/api/status',
+			undefined,
+			noToast,
+		);
 	}
 
 	// ===============================
@@ -525,7 +550,7 @@ class ApiClient {
 	// /**
 	//  * Fork an app
 	//  */
-    // DISABLED: Has been disabled for initial alpha release, for security reasons
+	// DISABLED: Has been disabled for initial alpha release, for security reasons
 	// async forkApp(appId: string): Promise<ApiResponse<ForkAppData>> {
 	// 	return this.request<ForkAppData>(`/api/apps/${appId}/fork`, {
 	// 		method: 'POST',
@@ -559,31 +584,38 @@ class ApiClient {
 		return this.request<UserAppsData>(endpoint);
 	}
 
-	async createAgentSession(args: CodeGenArgs): Promise<AgentStreamingResponse> {
+	async createAgentSession(
+		args: CodeGenArgs,
+	): Promise<AgentStreamingResponse> {
 		try {
 			const { response, data } = await this.requestRaw('/api/agent', {
 				method: 'POST',
 				body: args,
 				skipJsonParsing: true, // Don't parse JSON for streaming response
 			});
-			
+
 			// Check if response is ok
 			if (!response.ok) {
 				// Parse error response if available
-				const errorMessage = data?.error?.message || `Agent creation failed with status: ${response.status}`;
+				const errorMessage =
+					data?.error?.message ||
+					`Agent creation failed with status: ${response.status}`;
 				throw new Error(errorMessage);
 			}
-			
+
 			return {
 				success: true,
-				stream: response
+				stream: response,
 			};
 		} catch (error) {
 			// Handle any network or parsing errors
-			const errorMessage = error instanceof Error ? error.message : 'Failed to create agent session';
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: 'Failed to create agent session';
 			toast.error(errorMessage);
-			
-            throw new Error(errorMessage);
+
+			throw new Error(errorMessage);
 		}
 	}
 
@@ -913,7 +945,10 @@ class ApiClient {
 	 * This redirects to GitHub OAuth
 	 */
 	initiateGitHubOAuth(): void {
-		const oauthUrl = new URL('/api/github-app/authorize', window.location.origin);
+		const oauthUrl = new URL(
+			'/api/github-app/authorize',
+			window.location.origin,
+		);
 		window.location.href = oauthUrl.toString();
 	}
 
@@ -997,9 +1032,7 @@ class ApiClient {
 	/**
 	 * Create a new API key
 	 */
-	async createApiKey(data: {
-		name: string;
-	}): Promise<
+	async createApiKey(data: { name: string }): Promise<
 		ApiResponse<{
 			key: string;
 			keyPreview: string;
@@ -1101,8 +1134,14 @@ class ApiClient {
 	/**
 	 * Get current user profile
 	 */
-	async getProfile(noToast: boolean = false): Promise<ApiResponse<ProfileResponseData>> {
-		return this.request<ProfileResponseData>('/api/auth/profile', undefined, noToast);
+	async getProfile(
+		noToast: boolean = false,
+	): Promise<ApiResponse<ProfileResponseData>> {
+		return this.request<ProfileResponseData>(
+			'/api/auth/profile',
+			undefined,
+			noToast,
+		);
 	}
 
 	/**

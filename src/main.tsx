@@ -9,13 +9,15 @@ import './index.css';
 // Initialize Sentry before rendering
 initSentry();
 
-// Type for React Router hydration data  
+// Type for React Router hydration data
 import type { RouterState } from 'react-router';
 
 declare global {
-  interface Window {
-    __staticRouterHydrationData?: Partial<Pick<RouterState, 'loaderData' | 'actionData' | 'errors'>>;
-  }
+	interface Window {
+		__staticRouterHydrationData?: Partial<
+			Pick<RouterState, 'loaderData' | 'actionData' | 'errors'>
+		>;
+	}
 }
 
 const router = createBrowserRouter(routes, {
@@ -23,5 +25,5 @@ const router = createBrowserRouter(routes, {
 });
 
 createRoot(document.getElementById('root')!).render(
-  <RouterProvider router={router} />
+	<RouterProvider router={router} />,
 );

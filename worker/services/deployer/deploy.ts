@@ -5,10 +5,7 @@ import {
 	DispatchDeployConfig,
 	WranglerConfig,
 } from './types';
-import {
-	validateConfig,
-	buildWorkerBindings,
-} from './utils/index';
+import { validateConfig, buildWorkerBindings } from './utils/index';
 import { parse } from 'jsonc-parser';
 
 /**

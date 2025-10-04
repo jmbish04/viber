@@ -27,29 +27,41 @@ export function Blueprint({
 				{/* Basic Info */}
 				<div className="grid grid-cols-[120px_1fr] gap-4 text-sm">
 					<div className="text-text-50/70 font-mono">Description</div>
-					<Markdown className="text-text-50">{blueprint.description}</Markdown>
+					<Markdown className="text-text-50">
+						{blueprint.description}
+					</Markdown>
 
 					{Array.isArray(blueprint.colorPalette) &&
 						blueprint.colorPalette.length > 0 && (
 							<>
-								<div className="text-text-50/70 font-mono">Color Palette</div>
+								<div className="text-text-50/70 font-mono">
+									Color Palette
+								</div>
 								<div className="flex items-center gap-2">
 									{Array.isArray(blueprint.colorPalette) &&
-										blueprint.colorPalette?.map((color, index) => (
-											<div
-												key={`color-${index}`}
-												className="size-6 rounded-md border border-text/10 flex items-center justify-center"
-												style={{ backgroundColor: color }}
-												title={color}
-											>
-												<span className="sr-only">{color}</span>
-											</div>
-										))}
+										blueprint.colorPalette?.map(
+											(color, index) => (
+												<div
+													key={`color-${index}`}
+													className="size-6 rounded-md border border-text/10 flex items-center justify-center"
+													style={{
+														backgroundColor: color,
+													}}
+													title={color}
+												>
+													<span className="sr-only">
+														{color}
+													</span>
+												</div>
+											),
+										)}
 								</div>{' '}
 							</>
 						)}
 
-					<div className="text-text-50/70 font-mono">Dependencies</div>
+					<div className="text-text-50/70 font-mono">
+						Dependencies
+					</div>
 					<div className="flex flex-wrap gap-2 items-center">
 						{Array.isArray(blueprint.frameworks) &&
 							blueprint.frameworks.map((framework, index) => {
@@ -73,9 +85,13 @@ export function Blueprint({
 										key={`framework-${framework}-${index}`}
 										className="flex items-center text-xs border border-text/20 rounded-full px-2 py-0.5 text-text-primary/90 hover:border-white/40 transition-colors"
 									>
-										<span className="font-medium">{name}</span>
+										<span className="font-medium">
+											{name}
+										</span>
 										{version && (
-											<span className="text-text-primary/50">@{version}</span>
+											<span className="text-text-primary/50">
+												@{version}
+											</span>
 										)}
 									</span>
 								);
@@ -84,25 +100,29 @@ export function Blueprint({
 				</div>
 
 				{/* Views */}
-				{Array.isArray(blueprint.views) && blueprint.views.length > 0 && (
-					<div>
-						<h3 className="text-sm font-medium mb-3 text-text-50/70 uppercase tracking-wider">
-							Views
-						</h3>
-						<div className="space-y-3">
-							{blueprint.views.map((view, index) => (
-								<div key={`view-${index}`} className="space-y-1">
-									<h4 className="text-xs font-medium text-text-50/70">
-										{view.name}
-									</h4>
-									<Markdown className="text-sm text-text-50">
-										{view.description}
-									</Markdown>
-								</div>
-							))}
+				{Array.isArray(blueprint.views) &&
+					blueprint.views.length > 0 && (
+						<div>
+							<h3 className="text-sm font-medium mb-3 text-text-50/70 uppercase tracking-wider">
+								Views
+							</h3>
+							<div className="space-y-3">
+								{blueprint.views.map((view, index) => (
+									<div
+										key={`view-${index}`}
+										className="space-y-1"
+									>
+										<h4 className="text-xs font-medium text-text-50/70">
+											{view.name}
+										</h4>
+										<Markdown className="text-sm text-text-50">
+											{view.description}
+										</Markdown>
+									</div>
+								))}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 
 				{/* User Flow */}
 				{blueprint.userFlow && (
@@ -154,31 +174,39 @@ export function Blueprint({
 							Data Flow
 						</h3>
 						<Markdown className="text-sm text-text-50">
-							{blueprint.dataFlow || blueprint.architecture?.dataFlow}
+							{blueprint.dataFlow ||
+								blueprint.architecture?.dataFlow}
 						</Markdown>
 					</div>
 				)}
 
 				{/* Implementation Roadmap */}
-				{Array.isArray(blueprint.implementationRoadmap) && blueprint.implementationRoadmap.length > 0 && (
-					<div>
-						<h3 className="text-sm font-medium mb-2 text-text-50/70 uppercase tracking-wider">
-							Implementation Roadmap
-						</h3>
-						<div className="space-y-3">
-							{blueprint.implementationRoadmap.map((roadmapItem, index) => (
-								<div key={`roadmap-${index}`} className="space-y-1">
-									<h4 className="text-xs font-medium text-text-50/70">
-										Phase {index + 1}: {roadmapItem.phase}
-									</h4>
-									<Markdown className="text-sm text-text-50">
-										{roadmapItem.description}
-									</Markdown>
-								</div>
-							))}
+				{Array.isArray(blueprint.implementationRoadmap) &&
+					blueprint.implementationRoadmap.length > 0 && (
+						<div>
+							<h3 className="text-sm font-medium mb-2 text-text-50/70 uppercase tracking-wider">
+								Implementation Roadmap
+							</h3>
+							<div className="space-y-3">
+								{blueprint.implementationRoadmap.map(
+									(roadmapItem, index) => (
+										<div
+											key={`roadmap-${index}`}
+											className="space-y-1"
+										>
+											<h4 className="text-xs font-medium text-text-50/70">
+												Phase {index + 1}:{' '}
+												{roadmapItem.phase}
+											</h4>
+											<Markdown className="text-sm text-text-50">
+												{roadmapItem.description}
+											</Markdown>
+										</div>
+									),
+								)}
+							</div>
 						</div>
-					</div>
-				)}
+					)}
 
 				{/* Initial Phase */}
 				{blueprint.initialPhase && (
@@ -194,45 +222,59 @@ export function Blueprint({
 								<Markdown className="text-sm text-text-50 mb-3">
 									{blueprint.initialPhase.description}
 								</Markdown>
-								{Array.isArray(blueprint.initialPhase.files) && blueprint.initialPhase.files.length > 0 && (
-									<div>
-										<h5 className="text-xs font-medium mb-2 text-text-50/60">
-											Files to be created:
-										</h5>
-										<div className="space-y-2">
-											{blueprint.initialPhase.files.map((file, fileIndex) => (
-												<div key={`initial-phase-file-${fileIndex}`} className="border-l-2 border-text/10 pl-3">
-													<div className="font-mono text-xs text-text-50/80">{file.path}</div>
-													<div className="text-xs text-text-50/60">{file.purpose}</div>
-												</div>
-											))}
+								{Array.isArray(blueprint.initialPhase.files) &&
+									blueprint.initialPhase.files.length > 0 && (
+										<div>
+											<h5 className="text-xs font-medium mb-2 text-text-50/60">
+												Files to be created:
+											</h5>
+											<div className="space-y-2">
+												{blueprint.initialPhase.files.map(
+													(file, fileIndex) => (
+														<div
+															key={`initial-phase-file-${fileIndex}`}
+															className="border-l-2 border-text/10 pl-3"
+														>
+															<div className="font-mono text-xs text-text-50/80">
+																{file.path}
+															</div>
+															<div className="text-xs text-text-50/60">
+																{file.purpose}
+															</div>
+														</div>
+													),
+												)}
+											</div>
 										</div>
-									</div>
-								)}
+									)}
 							</div>
 						</div>
 					</div>
 				)}
 
 				{/* Pitfalls */}
-				{Array.isArray(blueprint.pitfalls) && blueprint.pitfalls.length > 0 && (
-					<div>
-						<h3 className="text-sm font-medium mb-2 text-text-50/70 uppercase tracking-wider">
-							Pitfalls
-						</h3>
-						<div className="prose prose-sm prose-invert">
-							<ul className="">
-								{blueprint.pitfalls?.map((pitfall, index) => (
-									<li key={`pitfall-${index}`} className="">
-										{pitfall}
-									</li>
-								))}
-							</ul>
+				{Array.isArray(blueprint.pitfalls) &&
+					blueprint.pitfalls.length > 0 && (
+						<div>
+							<h3 className="text-sm font-medium mb-2 text-text-50/70 uppercase tracking-wider">
+								Pitfalls
+							</h3>
+							<div className="prose prose-sm prose-invert">
+								<ul className="">
+									{blueprint.pitfalls?.map(
+										(pitfall, index) => (
+											<li
+												key={`pitfall-${index}`}
+												className=""
+											>
+												{pitfall}
+											</li>
+										),
+									)}
+								</ul>
+							</div>
 						</div>
-					</div>
-				)}
-
-
+					)}
 			</div>
 		</div>
 	);

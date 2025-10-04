@@ -13,7 +13,7 @@ import { AnalyticsError } from '../../../services/analytics/types';
 import { createLogger } from '../../../logger';
 
 export class AnalyticsController extends BaseController {
-    static logger = createLogger('AnalyticsController');
+	static logger = createLogger('AnalyticsController');
 	/**
 	 * Get analytics data for a specific user
 	 * GET /api/user/:id/analytics
@@ -59,11 +59,8 @@ export class AnalyticsController extends BaseController {
 			}
 
 			// Get analytics data
-            const service = new AiGatewayAnalyticsService(env);
-			const analyticsData = await service.getUserAnalytics(
-				userId,
-				days,
-			);
+			const service = new AiGatewayAnalyticsService(env);
+			const analyticsData = await service.getUserAnalytics(userId, days);
 
 			this.logger.info('User analytics retrieved successfully', {
 				userId,
@@ -135,11 +132,8 @@ export class AnalyticsController extends BaseController {
 			}
 
 			// Get analytics data
-            const service = new AiGatewayAnalyticsService(env);
-			const analyticsData = await service.getChatAnalytics(
-				agentId,
-				days,
-			);
+			const service = new AiGatewayAnalyticsService(env);
+			const analyticsData = await service.getChatAnalytics(agentId, days);
 
 			this.logger.info('Agent analytics retrieved successfully', {
 				agentId,

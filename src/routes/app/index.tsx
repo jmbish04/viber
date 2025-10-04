@@ -138,12 +138,14 @@ export default function AppView() {
 		fetchAppDetails();
 	}, [id, fetchAppDetails]);
 
-
 	// Convert agent files to chat FileType format
 	const files = useMemo<FileType[]>(() => {
 		if (!app?.agentSummary?.generatedCode) return [];
 		return app.agentSummary.generatedCode
-			.filter((file) => file && file.filePath && typeof file.filePath === 'string')
+			.filter(
+				(file) =>
+					file && file.filePath && typeof file.filePath === 'string',
+			)
 			.map((file) => ({
 				filePath: file.filePath,
 				fileContents: file.fileContents || '',
@@ -203,7 +205,8 @@ export default function AppView() {
 							prev
 								? {
 										...prev,
-										starCount: response.data?.starCount || 0,
+										starCount:
+											response.data?.starCount || 0,
 									}
 								: null,
 						);
@@ -211,7 +214,9 @@ export default function AppView() {
 							response.data.isStarred ? 'Starred!' : 'Unstarred',
 						);
 					} else {
-						throw new Error(response.error?.message || 'Failed to star app');
+						throw new Error(
+							response.error?.message || 'Failed to star app',
+						);
 					}
 				},
 				errorMessage: 'Failed to update star',
@@ -385,27 +390,27 @@ export default function AppView() {
 		try {
 			setIsDeploying(true);
 			setDeploymentProgress('Connecting to agent...');
-            const response = await apiClient.deployPreview(app.id);
-            if (response.success && response.data) {
-                const data = response.data;
-                if (data.previewURL || data.tunnelURL) {
-                    const newUrl = getPreviewUrl(
-                        data.previewURL,
-                        data.tunnelURL,
-                    );
-                    setApp((prev) =>
-                        prev
-                            ? {
-                                    ...prev,
-                                    cloudflareUrl: newUrl,
-                                    previewUrl: newUrl,
-                                }
-                            : null,
-                    );
-                    setDeploymentProgress('Deployment complete!');
-                }
-            }
-            setIsDeploying(false);
+			const response = await apiClient.deployPreview(app.id);
+			if (response.success && response.data) {
+				const data = response.data;
+				if (data.previewURL || data.tunnelURL) {
+					const newUrl = getPreviewUrl(
+						data.previewURL,
+						data.tunnelURL,
+					);
+					setApp((prev) =>
+						prev
+							? {
+									...prev,
+									cloudflareUrl: newUrl,
+									previewUrl: newUrl,
+								}
+							: null,
+					);
+					setDeploymentProgress('Deployment complete!');
+				}
+			}
+			setIsDeploying(false);
 		} catch (error) {
 			console.error('Error starting deployment:', error);
 			setDeploymentProgress('Failed to start deployment');
@@ -480,7 +485,7 @@ export default function AppView() {
 					// No history available, go to apps page
 					navigate('/apps');
 				}
-            }
+			}
 		} catch (error) {
 			console.error('Error deleting app:', error);
 			toast.error('An unexpected error occurred while deleting the app');
@@ -579,9 +584,7 @@ export default function AppView() {
 									variant="outline"
 									size="sm"
 									onClick={handleFavorite}
-									className={cn(
-										'gap-2 text-text-primary',
-									)}
+									className={cn('gap-2 text-text-primary')}
 								>
 									<Bookmark
 										className={cn(
@@ -621,7 +624,9 @@ export default function AppView() {
 												);
 											}
 										}}
-										className={cn('gap-2 text-text-primary')}
+										className={cn(
+											'gap-2 text-text-primary',
+										)}
 										title={`View on GitHub (${app.githubRepositoryVisibility || 'public'})`}
 									>
 										<Github className="h-4 w-4" />
@@ -657,8 +662,7 @@ export default function AppView() {
 											Delete App
 										</Button>
 									</>
-								) 
-                                : (
+								) : (
 									<>
 										{/*
 										<Button
@@ -672,8 +676,7 @@ export default function AppView() {
 										</Button>
 										*/}
 									</>
-								)
-                                }
+								)}
 							</div>
 						</div>
 
@@ -718,34 +721,46 @@ export default function AppView() {
 				>
 					{/* Using proper TabsList and TabsTrigger components */}
 					<TabsList className="inline-flex h-auto w-fit items-center gap-0.5 bg-bg-2 dark:bg-bg-1 rounded-md p-0.5 border border-border-primary/30 ml-0">
-						<TabsTrigger 
-							value="preview" 
+						<TabsTrigger
+							value="preview"
 							className="px-3 py-1.5 rounded text-xs font-medium data-[state=active]:bg-bg-4 dark:data-[state=active]:bg-bg-3 data-[state=active]:text-text-primary data-[state=active]:shadow-sm"
 						>
-							<Eye className={cn(
-								"h-3.5 w-3.5 mr-1.5",
-								activeTab === 'preview' ? 'text-accent' : 'text-accent/60'
-							)} />
+							<Eye
+								className={cn(
+									'h-3.5 w-3.5 mr-1.5',
+									activeTab === 'preview'
+										? 'text-accent'
+										: 'text-accent/60',
+								)}
+							/>
 							Preview
 						</TabsTrigger>
-						<TabsTrigger 
-							value="code" 
+						<TabsTrigger
+							value="code"
 							className="px-3 py-1.5 rounded text-xs font-medium data-[state=active]:bg-bg-4 dark:data-[state=active]:bg-bg-3 data-[state=active]:text-text-primary data-[state=active]:shadow-sm"
 						>
-							<Code2 className={cn(
-								"h-3.5 w-3.5 mr-1.5",
-								activeTab === 'code' ? 'text-accent' : 'text-accent/60'
-							)} />
+							<Code2
+								className={cn(
+									'h-3.5 w-3.5 mr-1.5',
+									activeTab === 'code'
+										? 'text-accent'
+										: 'text-accent/60',
+								)}
+							/>
 							Code
 						</TabsTrigger>
-						<TabsTrigger 
-							value="prompt" 
+						<TabsTrigger
+							value="prompt"
 							className="px-3 py-1.5 rounded text-xs font-medium data-[state=active]:bg-bg-4 dark:data-[state=active]:bg-bg-3 data-[state=active]:text-text-primary data-[state=active]:shadow-sm"
 						>
-							<MessageSquare className={cn(
-								"h-3.5 w-3.5 mr-1.5",
-								activeTab === 'prompt' ? 'text-accent' : 'text-accent/60'
-							)} />
+							<MessageSquare
+								className={cn(
+									'h-3.5 w-3.5 mr-1.5',
+									activeTab === 'prompt'
+										? 'text-accent'
+										: 'text-accent/60',
+								)}
+							/>
 							Prompt
 						</TabsTrigger>
 					</TabsList>
@@ -867,7 +882,10 @@ export default function AppView() {
 					</TabsContent>
 
 					<TabsContent value="code" className="flex-1">
-						<Card className="flex flex-col" style={{ maxHeight: '600px' }}>
+						<Card
+							className="flex flex-col"
+							style={{ maxHeight: '600px' }}
+						>
 							<CardHeader>
 								<div className="flex items-center justify-between">
 									<div>
@@ -990,10 +1008,9 @@ export default function AppView() {
 								) : (
 									<div className="flex items-center justify-center h-[400px]">
 										<p className="text-muted-foreground">
-											{app?.agentSummary === null 
-												? 'Loading code...' 
-												: 'No code has been generated yet.'
-											}
+											{app?.agentSummary === null
+												? 'Loading code...'
+												: 'No code has been generated yet.'}
 										</p>
 									</div>
 								)}
@@ -1001,10 +1018,7 @@ export default function AppView() {
 						</Card>
 					</TabsContent>
 
-					<TabsContent
-						value="prompt"
-						className="flex-1"
-					>
+					<TabsContent value="prompt" className="flex-1">
 						<Card>
 							<CardHeader>
 								<CardTitle>Original Prompt</CardTitle>
@@ -1013,7 +1027,8 @@ export default function AppView() {
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
-								{app?.agentSummary?.query || app?.originalPrompt ? (
+								{app?.agentSummary?.query ||
+								app?.originalPrompt ? (
 									<div className="bg-bg-2 rounded-lg p-6 border border-border-primary">
 										<div className="flex items-start gap-3">
 											<div className="flex-shrink-0 mt-1">
@@ -1022,23 +1037,33 @@ export default function AppView() {
 												</div>
 											</div>
 											<div className="flex-1">
-												<p className="text-sm text-text-secondary mb-2 font-medium">Prompt</p>
+												<p className="text-sm text-text-secondary mb-2 font-medium">
+													Prompt
+												</p>
 												<p className="text-text-primary whitespace-pre-wrap">
-													{app?.agentSummary?.query || app?.originalPrompt}
+													{app?.agentSummary?.query ||
+														app?.originalPrompt}
 												</p>
 											</div>
 										</div>
-										
+
 										{/* Copy button */}
 										<div className="mt-4 flex justify-end">
 											<Button
 												variant="outline"
 												size="sm"
 												onClick={() => {
-													const prompt = app?.agentSummary?.query || app?.originalPrompt;
+													const prompt =
+														app?.agentSummary
+															?.query ||
+														app?.originalPrompt;
 													if (prompt) {
-														navigator.clipboard.writeText(prompt);
-														toast.success('Prompt copied to clipboard');
+														navigator.clipboard.writeText(
+															prompt,
+														);
+														toast.success(
+															'Prompt copied to clipboard',
+														);
 													}
 												}}
 												className="gap-2"
@@ -1052,10 +1077,9 @@ export default function AppView() {
 									<div className="flex items-center justify-center py-12 text-text-tertiary">
 										<MessageSquare className="h-8 w-8 mr-3" />
 										<p>
-											{app?.agentSummary === null 
-												? 'Loading prompt...' 
-												: 'No prompt available'
-											}
+											{app?.agentSummary === null
+												? 'Loading prompt...'
+												: 'No prompt available'}
 										</p>
 									</div>
 								)}

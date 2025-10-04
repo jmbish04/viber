@@ -33,8 +33,11 @@ export interface DORateLimitConfig extends RateLimitConfigBase {
 	bucketSize?: number; // time bucket size in seconds (default: 10)
 }
 
-export type LLMCallsRateLimitConfig = (KVRateLimitConfig | DORateLimitConfig) & {
-    excludeBYOKUsers: boolean;
+export type LLMCallsRateLimitConfig = (
+	| KVRateLimitConfig
+	| DORateLimitConfig
+) & {
+	excludeBYOKUsers: boolean;
 };
 export type RateLimitConfig =
 	| RLRateLimitConfig
