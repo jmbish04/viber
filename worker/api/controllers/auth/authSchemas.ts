@@ -22,11 +22,7 @@ export type LoginRequest = z.infer<typeof loginSchema>;
 export const registerSchema = z.object({
 	email: commonSchemas.email,
 	password: commonSchemas.password,
-	name: z
-		.string()
-		.min(2, 'Name must be at least 2 characters')
-		.max(100)
-		.optional(),
+	name: z.string().min(2, 'Name must be at least 2 characters').max(100),
 });
 
 export type RegisterRequest = z.infer<typeof registerSchema>;

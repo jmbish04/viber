@@ -55,7 +55,7 @@ export function handleWebSocketMessage(
 						logger.error('Error during code generation:', error);
 						sendError(
 							connection,
-							`Error generating files: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+							`Error generating files: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 						);
 					})
 					.finally(() => {
@@ -130,7 +130,7 @@ export function handleWebSocketMessage(
 										);
 										sendError(
 											connection,
-											`Error regenerating file: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+											`Error regenerating file: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 										);
 									});
 							}
@@ -140,7 +140,7 @@ export function handleWebSocketMessage(
 						logger.error('Error during code review:', error);
 						sendError(
 							connection,
-							`Error during code review: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+							`Error during code review: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 						);
 					});
 				break;
@@ -252,7 +252,7 @@ export function handleWebSocketMessage(
 						logger.error('Error resuming code generation:', error);
 						sendError(
 							connection,
-							`Error resuming generation: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+							`Error resuming generation: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 						);
 					});
 				} else {
@@ -322,7 +322,7 @@ export function handleWebSocketMessage(
 						logger.error('Error handling user suggestion:', error);
 						sendError(
 							connection,
-							`Error processing user suggestion: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+							`Error processing user suggestion: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 						);
 					});
 				break;
@@ -344,7 +344,7 @@ export function handleWebSocketMessage(
 						logger.error('Error fetching model configs:', error);
 						sendError(
 							connection,
-							`Error fetching model configurations: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+							`Error fetching model configurations: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 						);
 					});
 				break;
@@ -382,7 +382,7 @@ export function handleWebSocketMessage(
 		logger.error('Error processing WebSocket message:', error);
 		sendError(
 			connection,
-			`Error processing message: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+			`Error processing message: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 		);
 	}
 }

@@ -20,6 +20,21 @@ import { fileURLToPath } from 'url';
 import { parse, modify, applyEdits } from 'jsonc-parser';
 import Cloudflare from 'cloudflare';
 
+// Generic type for Cloudflare API responses
+type ApiResponse<T> =
+	| {
+			success: true;
+			result: T;
+			errors: [];
+			messages: [];
+	  }
+	| {
+			success: false;
+			result: null;
+			errors: { code: number; message: string }[];
+			messages: { code: number; message: string }[];
+	  };
+
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -470,7 +485,10 @@ class CloudflareDeploymentManager {
 				return { hasAIGatewayAccess: false };
 			}
 
-			const verifyData = await verifyResponse.json();
+			const verifyData = (await verifyResponse.json()) as ApiResponse<{
+				id: string;
+				status: string;
+			}>;
 			if (!verifyData.success) {
 				console.warn('⚠️  API token verification failed');
 				return { hasAIGatewayAccess: false };
@@ -552,15 +570,18 @@ class CloudflareDeploymentManager {
 			);
 
 			if (!tokenResponse.ok) {
-				const errorData = await tokenResponse
-					.json()
-					.catch(() => ({ errors: [{ message: 'Unknown error' }] }));
+				const errorData = (await tokenResponse.json().catch(() => ({
+					errors: [{ message: 'Unknown error' }],
+				}))) as ApiResponse<null>;
 				throw new Error(
 					`API token creation failed: ${errorData.errors?.[0]?.message || tokenResponse.statusText}`,
 				);
 			}
 
-			const tokenData = await tokenResponse.json();
+			const tokenData = (await tokenResponse.json()) as ApiResponse<{
+				id: string;
+				value: string;
+			}>;
 
 			if (tokenData.success && tokenData.result?.value) {
 				const newToken = tokenData.result.value;
@@ -898,10 +919,10 @@ class CloudflareDeploymentManager {
 					continue;
 				}
 
-				const data = await response.json();
+				const data = (await response.json()) as ApiResponse<any>;
 
 				if (data.success && data.result && data.result.length > 0) {
-					const zone = data.result[0];
+					const zone = data.result;
 					console.log(
 						`   ✅ Found zone: ${zoneName} (ID: ${zone.id})`,
 					);
@@ -1598,7 +1619,7 @@ class CloudflareDeploymentManager {
 				return;
 			}
 
-			const currentNamespace = config.dispatch_namespaces[0].namespace;
+			const currentNamespace = config.dispatch_namespaces[0]?.namespace;
 
 			// Check if update is needed
 			if (currentNamespace === dispatchNamespace) {
@@ -1610,7 +1631,7 @@ class CloudflareDeploymentManager {
 
 			let updatedContent = content;
 
-			// Update dispatch_namespaces[0].namespace
+			// Update dispatch_namespaces.namespace
 			const namespaceEdits = modify(
 				updatedContent,
 				['dispatch_namespaces', 0, 'namespace'],
@@ -1634,7 +1655,7 @@ class CloudflareDeploymentManager {
 			this.logSuccess(
 				`Updated dispatch namespace: ${currentNamespace} → ${dispatchNamespace}`,
 				[
-					'Updated dispatch_namespaces[0].namespace',
+					'Updated dispatch_namespaces.namespace',
 					'Updated vars.DISPATCH_NAMESPACE for consistency',
 				],
 			);
@@ -1643,7 +1664,10 @@ class CloudflareDeploymentManager {
 			if (!this.config.dispatch_namespaces) {
 				this.config.dispatch_namespaces = [];
 			}
-			this.config.dispatch_namespaces[0].namespace = dispatchNamespace;
+			if (this.config.dispatch_namespaces[0]) {
+				this.config.dispatch_namespaces[0].namespace =
+					dispatchNamespace;
+			}
 			if (!this.config.vars) {
 				this.config.vars = {};
 			}

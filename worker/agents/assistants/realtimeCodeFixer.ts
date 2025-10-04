@@ -445,7 +445,7 @@ ${content}
 			for (let attempt = 0; attempt <= maxRetries; attempt++) {
 				currentDiff = currentDiff.replaceAll(
 					/^={7}\s*$\n^`{3}\s*$/gm,
-					'>>>>>>> REPLACE\n\`\`\`\n',
+					'>>>>>>> REPLACE\n```\n',
 				); // A hack cuz LLM often returns =7 and `3 instead of >>>>> REPLACE
 				const searchBlocks =
 					currentDiff.match(/<<<\s+SEARCH/g)?.length ?? 0;

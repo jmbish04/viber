@@ -165,7 +165,11 @@ export function createWebSocketMessageHandler(deps: HandleMessageDeps) {
 						state.templateDetails?.files &&
 						bootstrapFiles.length === 0
 					) {
-						loadBootstrapFiles(state.templateDetails.files);
+						loadBootstrapFiles(
+							state.templateDetails.files.filter(
+								(f) => f.filePath && f.fileContents,
+							) as FileType[],
+						);
 					}
 
 					if (state.generatedFilesMap && files.length === 0) {

@@ -12,13 +12,16 @@ import { AgentOperation, OperationOptions } from '../operations/common';
 import { ConversationMessage } from '../inferutils/common';
 import { StructuredLogger } from '../../logger';
 import { IdGenerator } from '../utils/idGenerator';
-import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
+import {
+	RateLimitExceededError,
+	SecurityError,
+} from '../../../shared/types/errors';
 import type { ImageAttachment } from '../../types/image-attachment';
 import { toolWebSearchDefinition } from '../tools/toolkit/web-search';
 import { toolWeatherDefinition } from '../tools/toolkit/weather';
 import { ToolDefinition } from '../tools/types';
 import { PROMPT_UTILS } from '../prompts';
-import { RuntimeError } from '../services/sandbox/sandboxTypes';
+import { RuntimeError } from '../../services/sandbox/sandboxTypes';
 import { CodeSerializerType } from '../utils/codeSerializers';
 
 // Constants
@@ -70,7 +73,7 @@ const SYSTEM_PROMPT = `You are Orange, an AI assistant for Cloudflare's AI power
 
 1. **For general questions or discussions**: Simply respond naturally and helpfully. Be friendly and informative.
 
-2. **When users want to modify their app or point out issues/bugs**: Use the queue_request tool to queue the modification request. 
+2. **When users want to modify their app or point out issues/bugs**: Use the queue_request tool to queue the modification request.
    - First acknowledge what they want to change
    - Then call the queue_request tool with a clear, actionable description
    - The modification request should be specific but NOT include code-level implementation details
@@ -104,16 +107,16 @@ Users may face issues, bugs and runtime errors. You won't have acceess to those,
         - After this initial loop, the system goes into a maintainance loop of code review <> file regeneration where a CodeReview Agent reviews the code and patches files in parallel as needed.
         - After few reviewcycles, we finish the app.
     - If a user makes any demands, the request is first sent to you. And then your job is to queue the request using the queue_request tool.
-        - If the phase generation <> implementation loop is not finished, the queued requests would be fetched whenever the next phase planning happens. 
+        - If the phase generation <> implementation loop is not finished, the queued requests would be fetched whenever the next phase planning happens.
         - If the review loop is running, then after code reviews are finished, the state machine next enters phase generation loop again.
         - If the state machine had ended, we restart it in the phase generation loop with your queued requests.
         - Any queued request thus might take some time for implementation.
     - During each phase generation and phase implementation, the agents try to fetch the latest runtime errors from the sandbox too.
         - They do their best to fix them, however sometimes they might fail, so they need to be prompted again. The agents don't have full visibility on server logs though, they can only see the errors and static analysis. User must report their own experiences and issues through you.
-    - The frontend has several buttons for the user - 
+    - The frontend has several buttons for the user -
         - Deploy to cloudflare: button to deploy the app to cloudflare workers, as sandbox previews are ephemeral.
         - Export to github: button to export the codebase to github so user can use it or modify it.
-        - Refresh: button to refresh the preview. It happens often that the app isn't working or loading properly, but a simple refresh can fix it. Although you should still report this by queueing a request. 
+        - Refresh: button to refresh the preview. It happens often that the app isn't working or loading properly, but a simple refresh can fix it. Although you should still report this by queueing a request.
         - Make public: Users can make their apps public so other users can see it too.
         - Discover page: Users can see other public apps here.
 
@@ -127,7 +130,7 @@ I hope this description of the system is enough for you to understand your own r
 - Don't mention 'deveopment team' or stuff like that. Say "I'll add that" or "I'll make that change".
 
 We have also recently added support for image inputs in beta. User can guide app generation or show bugs/UI issues using image inputs. You may inform the user about this feature.
-But it has limitations - Images are not stored in any form. Thus they would be lost after some time. They are just cached in the runtime temporarily. 
+But it has limitations - Images are not stored in any form. Thus they would be lost after some time. They are just cached in the runtime temporarily.
 
 ## IMPORTANT GUIDELINES:
 - DO NOT generate or discuss code-level implementation details
@@ -161,7 +164,7 @@ interface EditAppArgs {
 	modificationRequest: string;
 }
 
-interface EditAppResult {}
+type EditAppResult = object;
 
 export function buildEditAppTool(
 	stateMutator: (modificationRequest: string) => void,

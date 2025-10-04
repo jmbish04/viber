@@ -12,7 +12,7 @@ import {
 	registerSchema,
 	oauthProviderSchema,
 } from './authSchemas';
-import { SecurityError } from '../../../shared/types/errors';
+import { SecurityError } from '../../../../shared/types/errors';
 import {
 	formatAuthResponse,
 	mapUserResponse,
@@ -64,7 +64,11 @@ export class AuthController extends BaseController {
 				return bodyResult.response!;
 			}
 
-			const validatedData = registerSchema.parse(bodyResult.data);
+			const validatedData = registerSchema.parse(bodyResult.data) as {
+				name: string;
+				email: string;
+				password: string;
+			};
 
 			if (
 				env.ALLOWED_EMAIL &&
@@ -134,7 +138,10 @@ export class AuthController extends BaseController {
 				return bodyResult.response!;
 			}
 
-			const validatedData = loginSchema.parse(bodyResult.data);
+			const validatedData = loginSchema.parse(bodyResult.data) as {
+				email: string;
+				password: string;
+			};
 
 			if (
 				env.ALLOWED_EMAIL &&

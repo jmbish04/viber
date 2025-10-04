@@ -256,6 +256,64 @@ export function useChat({
 		],
 	);
 
+	// Handle connection failures with exponential backoff retry
+	const handleConnectionFailure = useCallback(
+		(wsUrl: string, disableGenerate: boolean, reason: string) => {
+			connectionStatus.current = 'failed';
+
+			if (retryCount.current >= maxRetries) {
+				logger.error(
+					`💥 WebSocket connection failed permanently after ${maxRetries + 1} attempts`,
+				);
+				sendMessage({
+					id: 'websocket_failed',
+					message: `🚨 Connection failed permanently after ${maxRetries + 1} attempts.\n\n❌ Reason: ${reason}\n\n🔄 Please refresh the page to try again.`,
+				});
+
+				// Debug logging for permanent failure
+				onDebugMessage?.(
+					'error',
+					'WebSocket Connection Failed Permanently',
+					`Failed after ${maxRetries + 1} attempts. Reason: ${reason}`,
+					'WebSocket Resilience',
+				);
+				return;
+			}
+
+			retryCount.current++;
+
+			// Exponential backoff: 2^attempt * 1000ms (1s, 2s, 4s, 8s, 16s)
+			const retryDelay = Math.pow(2, retryCount.current) * 1000;
+			const maxDelay = 30000; // Cap at 30 seconds
+			const actualDelay = Math.min(retryDelay, maxDelay);
+
+			logger.warn(
+				`🔄 Retrying WebSocket connection in ${actualDelay / 1000}s (attempt ${retryCount.current + 1}/${maxRetries + 1})`,
+			);
+
+			sendMessage({
+				id: 'websocket_retrying',
+				message: `🔄 Connection failed. Retrying in ${Math.ceil(actualDelay / 1000)} seconds... (attempt ${retryCount.current + 1}/${maxRetries + 1})\n\n❌ Reason: ${reason}`,
+				isThinking: true,
+			});
+
+			const timeoutId = setTimeout(() => {
+				// connectWithRetry(wsUrl, { disableGenerate, isRetry: true });
+			}, actualDelay);
+
+			retryTimeouts.current.push(timeoutId);
+
+			// Debug logging for retry attempt
+			onDebugMessage?.(
+				'warning',
+				'WebSocket Connection Retry',
+				`Retry ${retryCount.current}/${maxRetries} in ${actualDelay / 1000}s. Reason: ${reason}`,
+				'WebSocket Resilience',
+			);
+		},
+		[maxRetries, retryCount, retryTimeouts, onDebugMessage, sendMessage],
+	);
+
 	// WebSocket connection with retry logic
 	const connectWithRetry = useCallback(
 		(
@@ -264,7 +322,7 @@ export function useChat({
 				disableGenerate = false,
 				isRetry = false,
 			}: { disableGenerate?: boolean; isRetry?: boolean } = {},
-		) => {
+		): (() => void) | undefined => {
 			logger.debug(
 				`🔌 ${isRetry ? 'Retrying' : 'Attempting'} WebSocket connection (attempt ${retryCount.current + 1}/${maxRetries + 1}):`,
 				wsUrl,
@@ -401,71 +459,11 @@ export function useChat({
 				);
 			}
 		},
-		[handleConnectionFailure, urlChatId, sendMessage, handleWebSocketMessage],
-	);
-
-	// Handle connection failures with exponential backoff retry
-	const handleConnectionFailure = useCallback(
-		(wsUrl: string, disableGenerate: boolean, reason: string) => {
-			connectionStatus.current = 'failed';
-
-			if (retryCount.current >= maxRetries) {
-				logger.error(
-					`💥 WebSocket connection failed permanently after ${maxRetries + 1} attempts`,
-				);
-				sendMessage({
-					id: 'websocket_failed',
-					message: `🚨 Connection failed permanently after ${maxRetries + 1} attempts.\n\n❌ Reason: ${reason}\n\n🔄 Please refresh the page to try again.`,
-				});
-
-				// Debug logging for permanent failure
-				onDebugMessage?.(
-					'error',
-					'WebSocket Connection Failed Permanently',
-					`Failed after ${maxRetries + 1} attempts. Reason: ${reason}`,
-					'WebSocket Resilience',
-				);
-				return;
-			}
-
-			retryCount.current++;
-
-			// Exponential backoff: 2^attempt * 1000ms (1s, 2s, 4s, 8s, 16s)
-			const retryDelay = Math.pow(2, retryCount.current) * 1000;
-			const maxDelay = 30000; // Cap at 30 seconds
-			const actualDelay = Math.min(retryDelay, maxDelay);
-
-			logger.warn(
-				`🔄 Retrying WebSocket connection in ${actualDelay / 1000}s (attempt ${retryCount.current + 1}/${maxRetries + 1})`,
-			);
-
-			sendMessage({
-				id: 'websocket_retrying',
-				message: `🔄 Connection failed. Retrying in ${Math.ceil(actualDelay / 1000)} seconds... (attempt ${retryCount.current + 1}/${maxRetries + 1})\n\n❌ Reason: ${reason}`,
-				isThinking: true,
-			});
-
-			const timeoutId = setTimeout(() => {
-				connectWithRetry(wsUrl, { disableGenerate, isRetry: true });
-			}, actualDelay);
-
-			retryTimeouts.current.push(timeoutId);
-
-			// Debug logging for retry attempt
-			onDebugMessage?.(
-				'warning',
-				'WebSocket Connection Retry',
-				`Retry ${retryCount.current}/${maxRetries} in ${actualDelay / 1000}s. Reason: ${reason}`,
-				'WebSocket Resilience',
-			);
-		},
 		[
-			connectWithRetry,
-			maxRetries,
-			retryCount,
-			retryTimeouts,
-			onDebugMessage,
+			handleConnectionFailure,
+			urlChatId,
 			sendMessage,
+			handleWebSocketMessage,
 		],
 	);
 

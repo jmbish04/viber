@@ -61,15 +61,21 @@ export class ModelTestService extends BaseService {
 			let rawError = 'Unknown error occurred';
 
 			if (error instanceof InferError) {
-				rawError = error instanceof Error ? error.message : String(error);
+				rawError =
+					error instanceof Error ? error.message : String(error);
 			} else if (error instanceof Error) {
-				rawError = error instanceof Error ? error.message : String(error);
+				rawError =
+					error instanceof Error ? error.message : String(error);
 			} else if (isErrorWithMessage(error)) {
 				// Handle error objects from the core system
 				if (error instanceof Error ? error.message : String(error)) {
-					rawError = error instanceof Error ? error.message : String(error);
+					rawError =
+						error instanceof Error ? error.message : String(error);
 				} else if (error.error?.message) {
-					rawError = error.error instanceof Error ? error.error.message : String(error.error);
+					rawError =
+						error.error instanceof Error
+							? error.error.message
+							: String(error.error);
 				} else {
 					rawError = JSON.stringify(error);
 				}
@@ -152,15 +158,21 @@ export class ModelTestService extends BaseService {
 			let rawError = 'Connection test failed';
 
 			if (error instanceof InferError) {
-				rawError = error instanceof Error ? error.message : String(error);
+				rawError =
+					error instanceof Error ? error.message : String(error);
 			} else if (error instanceof Error) {
-				rawError = error instanceof Error ? error.message : String(error);
+				rawError =
+					error instanceof Error ? error.message : String(error);
 			} else if (isErrorWithMessage(error)) {
 				// Handle error objects from the core system
 				if (error instanceof Error ? error.message : String(error)) {
-					rawError = error instanceof Error ? error.message : String(error);
+					rawError =
+						error instanceof Error ? error.message : String(error);
 				} else if (error.error?.message) {
-					rawError = error.error instanceof Error ? error.error.message : String(error.error);
+					rawError =
+						error.error instanceof Error
+							? error.error.message
+							: String(error.error);
 				} else {
 					rawError = JSON.stringify(error);
 				}

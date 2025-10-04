@@ -13,7 +13,11 @@ export class OperationError {
 		error: unknown,
 	): never {
 		const errorMessage =
-			error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+			error instanceof Error
+				? error instanceof Error
+					? error.message
+					: String(error)
+				: String(error);
 		logger.error(`Error in ${operation}:`, error);
 		throw new Error(`${operation} failed: ${errorMessage}`);
 	}
@@ -28,7 +32,11 @@ export class OperationError {
 		defaultValue: T,
 	): T {
 		const errorMessage =
-			error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+			error instanceof Error
+				? error instanceof Error
+					? error.message
+					: String(error)
+				: String(error);
 		logger.error(`Error in ${operation}:`, error);
 		logger.warn(
 			`Returning default value for ${operation} due to error: ${errorMessage}`,

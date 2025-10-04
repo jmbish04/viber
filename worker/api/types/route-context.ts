@@ -2,7 +2,7 @@
  * Route Context Types
  */
 
-import { GlobalConfigurableSettings } from '../config';
+import { GlobalConfigurableSettings } from '../../config';
 import { AuthUser } from '../../types/auth-types';
 
 /**

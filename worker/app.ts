@@ -6,7 +6,7 @@ import { RateLimitService } from './services/rate-limit/rateLimits';
 import { AppEnv } from './types/appenv';
 import { setupRoutes } from './api/routes';
 import { CsrfService } from './services/csrf/CsrfService';
-import { SecurityError, SecurityErrorType } from '../../../shared/types/errors';
+import { SecurityError, SecurityErrorType } from '../shared/types/errors';
 import { getGlobalConfigurableSettings } from './config';
 import { AuthConfig, setAuthLevel } from './middleware/auth/routeAuth';
 // import { initHonoSentry } from './observability/sentry';
@@ -60,7 +60,8 @@ export function createApp(env: Env): Hono<AppEnv> {
 		} catch (error) {
 			if (
 				error instanceof SecurityError &&
-				error instanceof SecurityError && error.type === SecurityErrorType.CSRF_VIOLATION
+				error instanceof SecurityError &&
+				error.type === SecurityErrorType.CSRF_VIOLATION
 			) {
 				return new Response(
 					JSON.stringify({

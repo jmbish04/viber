@@ -248,9 +248,7 @@ export class SCOFFormat extends CodeGenerationFormat {
 		}
 	}
 
-	private tryParseCommand(
-		commandStr: string,
-	): {
+	private tryParseCommand(commandStr: string): {
 		type: 'file_creation' | 'diff_patch';
 		filePath: string;
 		eofMarker: string;
@@ -299,9 +297,7 @@ export class SCOFFormat extends CodeGenerationFormat {
 	/**
 	 * ENHANCED: Parse file creation commands with LLM error resilience
 	 */
-	private tryParseFileCreation(
-		command: string,
-	): {
+	private tryParseFileCreation(command: string): {
 		type: 'file_creation' | 'diff_patch';
 		filePath: string;
 		eofMarker: string;
@@ -400,9 +396,7 @@ export class SCOFFormat extends CodeGenerationFormat {
 	/**
 	 * ENHANCED: Parse diff patch commands with LLM error resilience
 	 */
-	private tryParseDiffPatch(
-		command: string,
-	): {
+	private tryParseDiffPatch(command: string): {
 		type: 'file_creation' | 'diff_patch';
 		filePath: string;
 		eofMarker: string;

@@ -13,8 +13,11 @@ import {
 } from '../../utils/authUtils';
 import { captureSecurityEvent } from '../../observability/sentry';
 import { KVRateLimitStore } from './KVRateLimitStore';
-import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
-import { isDev } from '../utils/envs';
+import {
+	RateLimitExceededError,
+	SecurityError,
+} from '../../../shared/types/errors';
+import { isDev } from '../../utils/envs';
 
 export class RateLimitService {
 	static logger = createObjectLogger(this, 'RateLimitService');
@@ -81,7 +84,12 @@ export class RateLimitService {
 		} catch (error) {
 			this.logger.error('Failed to enforce DO rate limit', {
 				key,
-				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
+				error:
+					error instanceof Error
+						? error instanceof Error
+							? error.message
+							: String(error)
+						: 'Unknown error',
 			});
 			return true; // Fail open
 		}

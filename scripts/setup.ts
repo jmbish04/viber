@@ -8,6 +8,21 @@ import { parse, modify, applyEdits } from 'jsonc-parser';
 import Cloudflare from 'cloudflare';
 import { createInterface } from 'readline';
 
+// Generic type for Cloudflare API responses
+type ApiResponse<T> =
+	| {
+			success: true;
+			result: T;
+			errors: [];
+			messages: [];
+	  }
+	| {
+			success: false;
+			result: null;
+			errors: { code: number; message: string }[];
+			messages: { code: number; message: string }[];
+	  };
+
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -927,7 +942,9 @@ class SetupManager {
 			);
 
 			if (response.ok) {
-				const data = await response.json();
+				const data = (await response.json()) as ApiResponse<
+					Array<{ id: string; title: string }>
+				>;
 				if (data.success && data.result) {
 					const existingNamespace = data.result.find(
 						(ns: any) => ns.title === namespaceName,
@@ -959,7 +976,10 @@ class SetupManager {
 			);
 
 			if (createResponse.ok) {
-				const data = await createResponse.json();
+				const data = (await createResponse.json()) as ApiResponse<{
+					id: string;
+					title: string;
+				}>;
 				if (data.success && data.result) {
 					console.log(`✅ Created KV namespace: ${namespaceName}`);
 					return { id: data.result.id, title: data.result.title };
@@ -988,7 +1008,9 @@ class SetupManager {
 
 		const listResponse = await fetch(baseUrl, { headers });
 		if (listResponse.ok) {
-			const data = await listResponse.json();
+			const data = (await listResponse.json()) as ApiResponse<
+				Array<{ uuid: string; name: string }>
+			>;
 			const existingDb = data.result?.find(
 				(db: any) => db.name === dbName,
 			);
@@ -1005,7 +1027,10 @@ class SetupManager {
 			body: JSON.stringify({ name: dbName }),
 		});
 
-		const data = await createResponse.json();
+		const data = (await createResponse.json()) as ApiResponse<{
+			uuid: string;
+			name: string;
+		}>;
 		if (!createResponse.ok || !data.success) {
 			const errorDetails =
 				data.errors?.map((e: any) => e.message).join(', ') ||
@@ -1100,7 +1125,9 @@ class SetupManager {
 		}
 
 		if (checkResponse.status !== 404) {
-			const errorData = await checkResponse.json().catch(() => ({}));
+			const errorData = (await checkResponse
+				.json()
+				.catch(() => ({}))) as { errors?: Array<{ message: string }> };
 			const errorDetails =
 				errorData.errors?.map((e: any) => e.message).join(', ') ||
 				checkResponse.statusText;
@@ -1117,7 +1144,10 @@ class SetupManager {
 			},
 		);
 
-		const data = await createResponse.json();
+		const data = (await createResponse.json()) as {
+			success?: boolean;
+			errors?: Array<{ message: string }>;
+		};
 		if (!createResponse.ok || !data.success) {
 			const errorDetails =
 				data.errors?.map((e: any) => e.message).join(', ') ||
@@ -1261,7 +1291,7 @@ class SetupManager {
 				return { hasAIGatewayAccess: false };
 			}
 
-			const data = await verifyResponse.json();
+			const data = (await verifyResponse.json()) as { result?: any };
 			return { hasAIGatewayAccess: true, tokenInfo: data.result };
 		} catch (error) {
 			console.warn('⚠️  Token verification failed');
@@ -1320,15 +1350,18 @@ class SetupManager {
 			);
 
 			if (!tokenResponse.ok) {
-				const errorData = await tokenResponse
-					.json()
-					.catch(() => ({ errors: [{ message: 'Unknown error' }] }));
+				const errorData = (await tokenResponse.json().catch(() => ({
+					errors: [{ message: 'Unknown error' }],
+				}))) as { errors?: Array<{ message: string }> };
 				throw new Error(
 					`API token creation failed: ${errorData.errors?.[0]?.message || tokenResponse.statusText}`,
 				);
 			}
 
-			const tokenData = await tokenResponse.json();
+			const tokenData = (await tokenResponse.json()) as {
+				success?: boolean;
+				result?: { value?: string; id?: string };
+			};
 			if (tokenData.success && tokenData.result?.value) {
 				const newToken = tokenData.result.value;
 				console.log(

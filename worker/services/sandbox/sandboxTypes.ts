@@ -15,7 +15,7 @@ export const FileTreeNodeSchema: z.ZodType<FileTreeNode> = z.lazy(() =>
 		type: z.enum(['file', 'directory']),
 		children: z.array(FileTreeNodeSchema).optional(),
 	}),
-);
+) as z.ZodType<FileTreeNode>;
 
 export const TemplateFileSchema = z.object({
 	filePath: z.string(),

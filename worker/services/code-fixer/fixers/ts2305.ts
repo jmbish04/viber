@@ -186,7 +186,7 @@ export async function fixMissingExportedMember(
 			logger.info(logs.success(issue));
 		} catch (error) {
 			logger.error(
-				`Failed to fix TS2305 issue at ${issue.filePath}:${issue.line}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+				`Failed to fix TS2305 issue at ${issue.filePath}:${issue.line}: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 				error,
 			);
 			unfixableIssues.push(

@@ -47,7 +47,7 @@ export class KVCache {
 					this.kv.delete(key.name),
 				),
 			);
-			cursor = list.list_complete ? undefined : list.cursor;
+			cursor = list.list_complete ? undefined : (list as any).cursor;
 		} while (cursor);
 	}
 

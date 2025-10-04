@@ -13,7 +13,7 @@ import { Context } from 'hono';
 import { AppEnv } from '../../types/appenv';
 import { RateLimitExceededError } from '../../../shared/types/errors';
 import * as Sentry from '@sentry/cloudflare';
-import { getUserConfigurableSettings } from '../config';
+import { getUserConfigurableSettings } from '../../config';
 
 const logger = createLogger('RouteAuth');
 
@@ -190,7 +190,10 @@ export async function enforceAuthRequirement(
 			);
 		} catch (error) {
 			if (error instanceof RateLimitExceededError) {
-				return errorResponse(error instanceof Error ? error : new Error(String(error)), 429);
+				return errorResponse(
+					error instanceof Error ? error : new Error(String(error)),
+					429,
+				);
 			}
 			logger.error('Error enforcing auth rate limit', error);
 			return errorResponse('Internal server error', 500);

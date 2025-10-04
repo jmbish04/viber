@@ -271,7 +271,7 @@ IMPORTANT:
 			} catch (error) {
 				this.handleParsingError(
 					state,
-					`XML processing error: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+					`XML processing error: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 					callbacks,
 				);
 				break;
@@ -291,9 +291,7 @@ IMPORTANT:
 		}
 	}
 
-	private findNextXmlTag(
-		buffer: string,
-	): {
+	private findNextXmlTag(buffer: string): {
 		type: 'opening' | 'closing' | 'self-closing';
 		tagName: string;
 		attributes: Record<string, string>;

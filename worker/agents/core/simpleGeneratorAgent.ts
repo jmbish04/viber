@@ -178,7 +178,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 	): Promise<string> {
 		const url = `https://api.cloudflare.com/client/v4/accounts/${this.env.CLOUDFLARE_ACCOUNT_ID}/images/v1`;
 		const bytes = this.base64ToUint8Array(base64);
-		const blob = new Blob([bytes], { type: 'image/png' });
+		const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' });
 		const form = new FormData();
 		form.append('file', blob, filename);
 
@@ -405,13 +405,13 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				.catch((error) => {
 					this.logger().error('Error during deployment:', error);
 					this.broadcast(WebSocketMessageResponses.ERROR, {
-						error: `Error during deployment: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+						error: `Error during deployment: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 					});
 				});
 		} catch (error) {
 			this.logger().error('Error during deployment:', error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error during deployment: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+				error: `Error during deployment: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 			});
 		}
 		this.logger().info(
@@ -437,7 +437,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error setting state:', error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error setting state: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}; Original state: ${JSON.stringify(this.state, null, 2)}; New state: ${JSON.stringify(state, null, 2)}`,
+				error: `Error setting state: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}; Original state: ${JSON.stringify(this.state, null, 2)}; New state: ${JSON.stringify(state, null, 2)}`,
 			});
 		}
 	}
@@ -640,7 +640,11 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				});
 			}
 			const errorMessage =
-				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: String(error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
 				error: `Error during generation: ${errorMessage}`,
 			});
@@ -1690,9 +1694,11 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 
 			if (
 				errors.filter((error) =>
-					error instanceof Error ? error.message : String(error).includes(
-						'Unterminated string in JSON at position',
-					),
+					error instanceof Error
+						? error.message
+						: String(error).includes(
+								'Unterminated string in JSON at position',
+							),
 				).length > 0
 			) {
 				this.logger().error(
@@ -1800,7 +1806,11 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error linting code:', error);
 			const errorMessage =
-				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: String(error);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
 				error: `Failed to lint code: ${errorMessage}`,
 			});
@@ -1904,7 +1914,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 					}
 				} catch (error) {
 					this.logger().debug(
-						`Failed to fetch file ${filePath}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+						`Failed to fetch file ${filePath}: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 					);
 				}
 				return null;
@@ -1995,7 +2005,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 				error,
 			);
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Deterministic code fixer failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+				error: `Deterministic code fixer failed: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 			});
 		}
 		// return undefined;
@@ -2268,7 +2278,11 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error deploying to sandbox service:', error);
 			const errorMsg =
-				error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error);
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: String(error);
 			if (
 				errorMsg.includes('Network connection lost') ||
 				errorMsg.includes('Container service disconnected') ||
@@ -2463,10 +2477,12 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			this.broadcast(
 				WebSocketMessageResponses.CLOUDFLARE_DEPLOYMENT_ERROR,
 				{
-					message: `Deployment failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+					message: `Deployment failed: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 					error:
 						error instanceof Error
-							? error instanceof Error ? error.message : String(error)
+							? error instanceof Error
+								? error.message
+								: String(error)
 							: 'Unknown error',
 				},
 			);
@@ -2629,7 +2645,10 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			return;
 		}
 		this.logger().info('Processing runtime error webhook', {
-			errorMessage: event.payload.error instanceof Error ? event.payload.error.message : String(event.payload.error),
+			errorMessage:
+				event.payload.error instanceof Error
+					? event.payload.error.message
+					: String(event.payload.error),
 			runId: event.payload.runId,
 			instanceId: event.instanceId,
 		});
@@ -3000,8 +3019,13 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('GitHub export failed', error);
 			this.broadcast(WebSocketMessageResponses.GITHUB_EXPORT_ERROR, {
-				message: `GitHub export failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
-				error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
+				message: `GitHub export failed: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
+				error:
+					error instanceof Error
+						? error instanceof Error
+							? error.message
+							: String(error)
+						: 'Unknown error',
 			});
 			return { success: false, repositoryUrl: options.repositoryHtmlUrl };
 		}
@@ -3119,14 +3143,13 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 		} catch (error) {
 			this.logger().error('Error handling user input:', error);
 			if (error instanceof RateLimitExceededError) {
-				this.broadcast(
-					WebSocketMessageResponses.RATE_LIMIT_ERROR,
-					{ error },
-				);
+				this.broadcast(WebSocketMessageResponses.RATE_LIMIT_ERROR, {
+					error,
+				});
 				return;
 			}
 			this.broadcast(WebSocketMessageResponses.ERROR, {
-				error: `Error processing user input: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+				error: `Error processing user input: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 			});
 		}
 	}
@@ -3331,7 +3354,11 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 
 			// Only broadcast if error wasn't already broadcast above
 			const errorMessage =
-				error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: 'Unknown error';
 			if (
 				!errorMessage.includes('Browser Rendering API') &&
 				!errorMessage.includes('Database update failed')
@@ -3347,7 +3374,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			}
 
 			throw new Error(
-				`Screenshot capture failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+				`Screenshot capture failed: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 			);
 		}
 	}
@@ -3534,7 +3561,7 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			this.logger().error('Error executing terminal command:', error);
 
 			const errorMessage = {
-				output: `Error: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+				output: `Error: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 				outputType: 'stderr' as const,
 				timestamp: Date.now(),
 			};

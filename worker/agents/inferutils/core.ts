@@ -19,10 +19,13 @@ import { AgentActionKey, AIModels, InferenceMetadata } from './config.types';
 // import { SecretsService } from '../../database';
 import { RateLimitService } from '../../services/rate-limit/rateLimits';
 import { AuthUser } from '../../types/auth-types';
-import { getUserConfigurableSettings } from '../config';
-import { SecurityError, RateLimitExceededError } from '../../../shared/types/errors';
+import { getUserConfigurableSettings } from '../../config';
+import {
+	SecurityError,
+	RateLimitExceededError,
+} from '../../../shared/types/errors';
 import { executeToolWithDefinition } from '../tools/customTools';
-import { RateLimitType } from '../services/rate-limit/config';
+import { RateLimitType } from '../../services/rate-limit/config';
 
 function optimizeInputs(messages: Message[]): Message[] {
 	return messages.map((message) => ({
@@ -450,7 +453,7 @@ async function executeToolCalls(
 					name: tc.function.name,
 					arguments: {},
 					result: {
-						error: `Failed to execute ${tc.function.name}: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+						error: `Failed to execute ${tc.function.name}: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 					},
 				};
 			}
@@ -649,7 +652,9 @@ export async function infer<OutputSchema extends z.AnyZodObject>(
 				`Failed to get inference response from OpenAI: ${error}`,
 			);
 			if (
-				(error instanceof Error && error instanceof Error ? error.message : String(error).includes('429')) ||
+				(error instanceof Error && error instanceof Error
+					? error.message
+					: String(error).includes('429')) ||
 				(typeof error === 'string' && error.includes('429'))
 			) {
 				throw new RateLimitExceededError(
@@ -747,7 +752,9 @@ export async function infer<OutputSchema extends z.AnyZodObject>(
 								{
 									error:
 										error instanceof Error
-											? error instanceof Error ? error.message : String(error)
+											? error instanceof Error
+												? error.message
+												: String(error)
 											: String(error),
 									arguments_length:
 										toolCall.function.arguments.length,

@@ -10,7 +10,13 @@
 		"moduleResolution": "bundler",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"downlevelIteration": true
+		"downlevelIteration": true,
+		"baseUrl": ".",
+		"paths": {
+			"@/*": ["./src/*"],
+			"shared/*": ["./shared/*"],
+			"worker/*": ["./worker/*"]
+		}
 	},
 	"include": ["src/**/*", "worker/**/*", "scripts/**/*", "shared/**/*"],
 	"exclude": ["node_modules", "dist", "**/*.test.ts", "**/*.spec.ts"]

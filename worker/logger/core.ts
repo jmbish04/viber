@@ -160,7 +160,9 @@ export class StructuredLogger {
 		if (error instanceof Error) {
 			logEntry.error = {
 				name: error.name,
-				message: scrubCredentials(error instanceof Error ? error.message : String(error)) as string,
+				message: scrubCredentials(
+					error instanceof Error ? error.message : String(error),
+				) as string,
 				stack: scrubCredentials(error.stack) as string | undefined,
 			};
 		}

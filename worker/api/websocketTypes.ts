@@ -12,7 +12,7 @@ import type {
 } from '../services/sandbox/sandboxTypes';
 import type { CodeFixResult } from '../services/code-fixer';
 import { IssueReport } from '../agents/domain/values/IssueReport';
-import type { RateLimitExceededError } from '../../../shared/types/errors';
+import type { RateLimitExceededError } from '../../shared/types/errors';
 
 type ErrorMessage = {
 	type: 'error';

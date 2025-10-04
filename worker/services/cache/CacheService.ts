@@ -12,8 +12,8 @@ export class CacheService {
 	 * Get cached response
 	 */
 	async get(keyOrRequest: string | Request): Promise<Response | undefined> {
-		// Use caches.default for Cloudflare Workers
-		const cache = caches.default;
+		// Use caches.open for Cloudflare Workers
+		const cache = await caches.open('default');
 		return await cache.match(keyOrRequest);
 	}
 
@@ -43,8 +43,8 @@ export class CacheService {
 			},
 		});
 
-		// Use caches.default for Cloudflare Workers
-		const cache = caches.default;
+		// Use caches.open for Cloudflare Workers
+		const cache = await caches.open('default');
 		await cache.put(keyOrRequest, responseToCache);
 	}
 

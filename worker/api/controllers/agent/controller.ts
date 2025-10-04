@@ -15,7 +15,7 @@ import { ModelConfig } from '../../../agents/inferutils/config.types';
 import { RateLimitService } from '../../../services/rate-limit/rateLimits';
 import { validateWebSocketOrigin } from '../../../middleware/security/websocket';
 import { createLogger } from '../../../logger';
-import { getPreviewDomain } from '../utils/urls';
+import { getPreviewDomain } from '../../../utils/urls';
 
 const defaultCodeGenArgs: CodeGenArgs = {
 	query: '',
@@ -300,7 +300,7 @@ export class CodingAgentController extends BaseController {
 				server.send(
 					JSON.stringify({
 						type: WebSocketMessageResponses.ERROR,
-						error: `Failed to get agent instance: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+						error: `Failed to get agent instance: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 					}),
 				);
 
@@ -377,7 +377,7 @@ export class CodingAgentController extends BaseController {
 					error,
 				);
 				return CodingAgentController.createErrorResponse<AgentConnectionData>(
-					`Agent instance not found or unavailable: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : String(error)}`,
+					`Agent instance not found or unavailable: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : String(error)}`,
 					404,
 				);
 			}

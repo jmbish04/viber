@@ -449,7 +449,7 @@ export class ModelProvidersController extends BaseController {
 				}
 			} catch (error) {
 				return ModelProvidersController.createErrorResponse<ModelProviderTestData>(
-					`Connection failed: ${error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error'}`,
+					`Connection failed: ${error instanceof Error ? (error instanceof Error ? error.message : String(error)) : 'Unknown error'}`,
 					500,
 				);
 			}

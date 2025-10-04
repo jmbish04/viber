@@ -3,7 +3,7 @@
  */
 
 import { createLogger } from '../logger';
-import { SecurityError } from '../../../shared/types/errors';
+import { SecurityError } from '../../shared/types/errors';
 import { errorResponse } from '../api/responses';
 
 const logger = createLogger('ErrorHandling');
@@ -50,7 +50,11 @@ export class ErrorHandler {
 		context?: Record<string, any>,
 	): AppError {
 		const errorMessage =
-			error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error';
+			error instanceof Error
+				? error instanceof Error
+					? error.message
+					: String(error)
+				: 'Unknown error';
 
 		logger.error(`Error during ${operation}`, {
 			error: errorMessage,
@@ -86,7 +90,10 @@ export class ErrorHandler {
 	 * Convert AppError to HTTP Response
 	 */
 	static toResponse(error: AppError): Response {
-		return errorResponse(error instanceof Error ? error.message : String(error), error instanceof SecurityError ? error.statusCode : 500);
+		return errorResponse(
+			error instanceof Error ? error.message : String(error),
+			error.statusCode,
+		);
 	}
 
 	/**
@@ -315,7 +322,12 @@ export class ControllerErrorHandler {
 		context?: Record<string, any>,
 	): never {
 		logger.error(`External service error: ${serviceName}`, {
-			error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
+			error:
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: 'Unknown error',
 			...context,
 		});
 

@@ -16,11 +16,12 @@ export class FileManager implements IFileManager {
 		path: string,
 	): { filePath: string; fileContents: string } | null {
 		const state = this.stateManager.getState();
-		return (
-			state.templateDetails?.files?.find(
-				(file) => file.filePath === path,
-			) || null
+		const file = state.templateDetails?.files?.find(
+			(file) => file.filePath === path,
 		);
+		return file && file.filePath && file.fileContents
+			? (file as { filePath: string; fileContents: string })
+			: null;
 	}
 
 	getGeneratedFile(path: string): FileOutputType | null {

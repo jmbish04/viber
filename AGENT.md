@@ -27,18 +27,21 @@ The agent operates through several states:
 ## Key Features
 
 ### Code Generation
+
 - Blueprint-based phase generation
 - Real-time file streaming with WebSocket updates
 - Code validation and error correction
 - Support for multiple frameworks and languages
 
 ### Deployment
+
 - Cloudflare Workers deployment
 - Sandbox service integration
 - GitHub export functionality
 - Screenshot capture and analysis
 
 ### Error Handling
+
 - Runtime error detection
 - Static code analysis
 - Deterministic code fixes

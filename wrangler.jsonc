@@ -9,18 +9,18 @@
 	"compatibility_date": "2025-08-10",
 	"compatibility_flags": ["nodejs_compat"],
 	"version_metadata": {
-		"binding": "CF_VERSION_METADATA"
+		"binding": "CF_VERSION_METADATA",
 	},
 	"assets": {
 		"directory": "dist",
 		"not_found_handling": "single-page-application",
 		// "run_worker_first": ["!/src/*", "!/api/docs/*"],
 		"run_worker_first": true,
-		"binding": "ASSETS"
+		"binding": "ASSETS",
 	},
 	"observability": {
 		"enabled": true,
-		"head_sampling_rate": 1
+		"head_sampling_rate": 1,
 	},
 	"unsafe": {
 		"bindings": [
@@ -28,15 +28,15 @@
 				"name": "API_RATE_LIMITER",
 				"type": "ratelimit",
 				"namespace_id": "2101",
-				"simple": { "limit": 10000, "period": 60 }
+				"simple": { "limit": 10000, "period": 60 },
 			},
 			{
 				"name": "AUTH_RATE_LIMITER",
 				"type": "ratelimit",
 				"namespace_id": "2102",
-				"simple": { "limit": 1000, "period": 60 }
-			}
-		]
+				"simple": { "limit": 1000, "period": 60 },
+			},
+		],
 	},
 	/**
 	 * Bindings
@@ -46,61 +46,61 @@
 	 */
 	"ai": {
 		"binding": "AI",
-		"remote": true
+		"remote": true,
 	},
 	"images": {
-		"binding": "IMAGES"
+		"binding": "IMAGES",
 	},
 
-	 "containers": [
-	 	{
-	 		"class_name": "UserAppSandboxService",
-	 		"image": "./SandboxDockerfile",
-	 		// Altering max_instances value will have no effect. Please use the MAX_SANDBOX_INSTANCES var instead.
-	 		"max_instances": 10,
-	 		// ATTENTION: Altering instance_type value will have no effect. Please use the SANDBOX_INSTANCE_TYPE var instead.
-	 		"instance_type": "standard-3",
-	 		"rollout_step_percentage": 100
-	 	}
-	 ],
+	"containers": [
+		{
+			"class_name": "UserAppSandboxService",
+			"image": "./SandboxDockerfile",
+			// Altering max_instances value will have no effect. Please use the MAX_SANDBOX_INSTANCES var instead.
+			"max_instances": 10,
+			// ATTENTION: Altering instance_type value will have no effect. Please use the SANDBOX_INSTANCE_TYPE var instead.
+			"instance_type": "standard-3",
+			"rollout_step_percentage": 100,
+		},
+	],
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "vibesdk-db",
 			"database_id": "f421b06a-df95-4a2e-a6c2-a1c0c0ed1544",
 			"migrations_dir": "migrations",
-			"remote": true
-		}
+			"remote": true,
+		},
 	],
 	"durable_objects": {
 		"bindings": [
 			{
 				"class_name": "CodeGeneratorAgent",
-				"name": "CodeGenObject"
+				"name": "CodeGenObject",
 			},
 			{
 				"class_name": "UserAppSandboxService",
-				"name": "Sandbox"
+				"name": "Sandbox",
 			},
 			{
 				"class_name": "DORateLimitStore",
-				"name": "DORateLimitStore"
-			}
-		]
+				"name": "DORateLimitStore",
+			},
+		],
 	},
 	"r2_buckets": [
 		{
 			"binding": "TEMPLATES_BUCKET",
 			"bucket_name": "vibesdk-templates",
-			"remote": true
-		}
+			"remote": true,
+		},
 	],
 	"kv_namespaces": [
 		{
 			"binding": "VibecoderStore",
 			"id": "288c1504d1874c34b38e62858013dbc9",
-			"remote": true
-		}
+			"remote": true,
+		},
 	],
 	// "placement": {
 	//   "mode": "smart"
@@ -109,14 +109,14 @@
 		{
 			"new_sqlite_classes": [
 				"CodeGeneratorAgent",
-				"UserAppSandboxService"
+				"UserAppSandboxService",
 			],
-			"tag": "v1"
+			"tag": "v1",
 		},
 		{
 			"new_sqlite_classes": ["DORateLimitStore"],
-			"tag": "v2"
-		}
+			"tag": "v2",
+		},
 	],
 	// "routes": [
 	//     {
@@ -130,9 +130,9 @@
 	//     }
 	// ],
 	"vars": {
-        "ALLOWED_EMAIL": "",
-        "DISPATCH_NAMESPACE": ""
-    },
+		"ALLOWED_EMAIL": "",
+		"DISPATCH_NAMESPACE": "",
+	},
 	"workers_dev": true,
-	"preview_urls": true
+	"preview_urls": true,
 }

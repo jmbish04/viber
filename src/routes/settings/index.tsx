@@ -17,6 +17,9 @@ import type {
 	EncryptedSecret,
 	ActiveSessionsData,
 	SecretTemplate,
+	UserModelConfigWithMetadata,
+	AgentConfig,
+	ModelConfig,
 } from '@/api-types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -216,8 +219,17 @@ export default function SettingsPage() {
 			const response = await apiClient.getModelConfigs();
 
 			if (response.success && response.data) {
-				setModelConfigs(response.data.configs || {});
-				setDefaultConfigs(response.data.defaults || {});
+				setModelConfigs(
+					response.data.configs ||
+						({} as Record<
+							keyof AgentConfig,
+							UserModelConfigWithMetadata
+						>),
+				);
+				setDefaultConfigs(
+					response.data.defaults ||
+						({} as Record<keyof AgentConfig, ModelConfig>),
+				);
 			} else {
 				throw new Error(
 					response.error?.message ||

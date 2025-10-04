@@ -28,7 +28,12 @@ const weatherToolImplementation = async (
 		};
 	} catch (error) {
 		return {
-			error: error instanceof Error ? error instanceof Error ? error.message : String(error) : 'Unknown error',
+			error:
+				error instanceof Error
+					? error instanceof Error
+						? error.message
+						: String(error)
+					: 'Unknown error',
 		};
 	}
 };

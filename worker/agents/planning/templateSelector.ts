@@ -3,11 +3,14 @@ import {
 	createUserMessage,
 	createMultiModalUserMessage,
 } from '../inferutils/common';
-import { TemplateListResponse } from '../services/sandbox/sandboxTypes';
+import { TemplateListResponse } from '../../services/sandbox/sandboxTypes';
 import { createLogger } from '../../logger';
 import { executeInference } from '../inferutils/infer';
 import { InferenceContext } from '../inferutils/config.types';
-import { RateLimitExceededError, SecurityError } from '../../../shared/types/errors';
+import {
+	RateLimitExceededError,
+	SecurityError,
+} from '../../../shared/types/errors';
 import {
 	TemplateSelection,
 	TemplateSelectionSchema,
@@ -89,7 +92,7 @@ Reasoning: "Social template provides user interactions, content sharing, and com
 
 ## SELECTION CRITERIA:
 1. **Feature Alignment** - Templates with similar core functionality
-2. **Tech Stack Match** - Compatible frameworks and dependencies  
+2. **Tech Stack Match** - Compatible frameworks and dependencies
 3. **Architecture Fit** - Similar application structure and patterns
 4. **Minimal Modification** - Template requiring least changes
 

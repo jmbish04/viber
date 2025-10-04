@@ -40,6 +40,7 @@ VibeSDK is a Cloudflare Workers-based platform for AI-powered code generation an
 ## Development Guidelines
 
 ### Code Style
+
 - Use TypeScript strict mode
 - Follow ESLint configuration
 - Use Prettier for formatting
@@ -47,18 +48,21 @@ VibeSDK is a Cloudflare Workers-based platform for AI-powered code generation an
 - Use async/await over Promises
 
 ### Import Patterns
+
 - Use relative imports within the same directory
 - Use absolute imports for shared modules
 - Import types with `import type` syntax
 - Group imports: external, internal, relative
 
 ### Error Handling
+
 - Use custom error classes from `shared/types/errors`
 - Implement proper error boundaries in React
 - Log errors with structured logging
 - Return appropriate HTTP status codes
 
 ### Database Operations
+
 - Use Drizzle ORM for all database operations
 - Implement proper transaction handling
 - Use prepared statements for security
@@ -67,44 +71,54 @@ VibeSDK is a Cloudflare Workers-based platform for AI-powered code generation an
 ## Common Patterns
 
 ### Agent Implementation
+
 ```typescript
 export class MyAgent extends Agent<Env, StateType> {
-  async initialize(args: InitArgs): Promise<StateType> {
-    // Initialization logic
-  }
-  
-  async onMessage(connection: Connection, message: string): Promise<void> {
-    // Handle WebSocket messages
-  }
+	async initialize(args: InitArgs): Promise<StateType> {
+		// Initialization logic
+	}
+
+	async onMessage(connection: Connection, message: string): Promise<void> {
+		// Handle WebSocket messages
+	}
 }
 ```
 
 ### API Controller
+
 ```typescript
-export async function handleRequest(request: Request, env: Env): Promise<Response> {
-  try {
-    // Controller logic
-    return new Response(JSON.stringify(data), {
-      headers: { 'Content-Type': 'application/json' }
-    });
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500
-    });
-  }
+export async function handleRequest(
+	request: Request,
+	env: Env,
+): Promise<Response> {
+	try {
+		// Controller logic
+		return new Response(JSON.stringify(data), {
+			headers: { 'Content-Type': 'application/json' },
+		});
+	} catch (error) {
+		return new Response(JSON.stringify({ error: error.message }), {
+			status: 500,
+		});
+	}
 }
 ```
 
 ### Database Service
+
 ```typescript
 export class MyService {
-  constructor(private env: Env) {}
-  
-  async create(data: CreateData): Promise<Result> {
-    return await this.env.DB.prepare(`
+	constructor(private env: Env) {}
+
+	async create(data: CreateData): Promise<Result> {
+		return await this.env.DB.prepare(
+			`
       INSERT INTO table (field) VALUES (?)
-    `).bind(data.value).run();
-  }
+    `,
+		)
+			.bind(data.value)
+			.run();
+	}
 }
 ```
 
@@ -184,6 +198,7 @@ When working with this codebase:
 **CRITICAL**: Always run `bun run check` before and after making changes to ensure TypeScript errors are resolved.
 
 **Workflow**:
+
 1. **Before changes**: Run `bun run check` to identify existing issues
 2. **Make changes**: Implement your modifications
 3. **After changes**: Run `bun run check` to verify no new errors
@@ -191,12 +206,14 @@ When working with this codebase:
 5. **Final verification**: Run `bun run check` again to confirm all issues are resolved
 
 **Available Commands**:
+
 - `bun run check` - Full check (types + formatting)
 - `bun run check:types` - TypeScript type checking only
 - `bun run check:format` - Code formatting check only
 - `bun run format` - Auto-fix formatting issues
 
 **Error Resolution Priority**:
+
 1. Fix TypeScript compilation errors first
 2. Address type safety issues
 3. Resolve import/export problems
