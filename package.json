@@ -38,7 +38,12 @@
 		"knip:fix": "knip --fix",
 		"knip:production": "knip --production",
 		"knip:dependencies": "knip --dependencies",
-		"knip:exports": "knip --exports"
+		"knip:exports": "knip --exports",
+		"commit:gh": "git add . && git commit -m \"Update: $(date '+%Y-%m-%d %H:%M:%S')\" && git push origin main",
+		"check": "npm run check:types && npm run check:format",
+		"check:types": "tsc --project tsconfig.check.json",
+		"check:format": "prettier --check .",
+		"format": "prettier --write ."
 	},
 	"dependencies": {
 		"@cloudflare/containers": "^0.0.25",
