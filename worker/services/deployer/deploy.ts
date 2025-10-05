@@ -1,9 +1,9 @@
 import { WorkerDeployer } from './deployer';
 import {
-	WorkerBinding,
-	DeployConfig,
-	DispatchDeployConfig,
-	WranglerConfig,
+        WorkerBinding,
+        DeployConfig,
+        WranglerConfig,
+        PreparedDeployment,
 } from './types';
 import { validateConfig, buildWorkerBindings } from './utils/index';
 import { parse } from 'jsonc-parser';
@@ -49,64 +49,41 @@ export function parseWranglerConfig(configContent: string): WranglerConfig {
  * Deploy a Cloudflare Worker with the provided configuration and assets
  */
 export async function deployWorker(
-	deployConfig: DeployConfig,
-	fileContents?: Map<string, Buffer>,
-	additionalModules?: Map<string, string>,
-	migrations?: WranglerConfig['migrations'],
-	assetsConfig?: WranglerConfig['assets'],
-	dispatchNamespace?: string,
-): Promise<void> {
-	const deployer = new WorkerDeployer(
-		deployConfig.accountId,
-		deployConfig.apiToken,
-	);
+        deployConfig: DeployConfig,
+        fileContents?: Map<string, Buffer>,
+        additionalModules?: Map<string, string>,
+        migrations?: WranglerConfig['migrations'],
+        assetsConfig?: WranglerConfig['assets'],
+): Promise<PreparedDeployment> {
+        const deployer = new WorkerDeployer(
+                deployConfig.accountId,
+                deployConfig.apiToken,
+        );
 
-	if (deployConfig.assets && fileContents) {
-		await deployer.deployWithAssets(
-			deployConfig.scriptName,
-			deployConfig.workerContent,
-			deployConfig.compatibilityDate,
-			deployConfig.assets,
-			fileContents,
-			deployConfig.bindings,
-			deployConfig.vars,
-			dispatchNamespace,
-			assetsConfig,
-			additionalModules,
-			deployConfig.compatibilityFlags,
-			migrations,
-		);
-	} else {
-		await deployer.deploySimple(
-			deployConfig.scriptName,
-			deployConfig.workerContent,
-			deployConfig.compatibilityDate,
-			deployConfig.bindings,
-			deployConfig.vars,
-			dispatchNamespace,
-			additionalModules,
-			deployConfig.compatibilityFlags,
-			migrations,
-		);
-	}
-}
-
-/**
- * Deploy to Workers for Platforms (Dispatch namespace)
- */
-export async function deployToDispatch(
-	deployConfig: DispatchDeployConfig,
-	fileContents?: Map<string, Buffer>,
-	additionalModules?: Map<string, string>,
-	migrations?: WranglerConfig['migrations'],
-	assetsConfig?: WranglerConfig['assets'],
-): Promise<void> {
-	await deployWorker(
-		deployConfig,
-		fileContents,
-		additionalModules,
-		migrations,
-		assetsConfig,
-		deployConfig.dispatchNamespace,
-	);
+        if (deployConfig.assets && fileContents) {
+                return await deployer.deployWithAssets(
+                        deployConfig.scriptName,
+                        deployConfig.workerContent,
+                        deployConfig.compatibilityDate,
+                        deployConfig.assets,
+                        fileContents,
+                        deployConfig.bindings,
+                        deployConfig.vars,
+                        assetsConfig,
+                        additionalModules,
+                        deployConfig.compatibilityFlags,
+                        migrations,
+                );
+        } else {
+                return await deployer.deploySimple(
+                        deployConfig.scriptName,
+                        deployConfig.workerContent,
+                        deployConfig.compatibilityDate,
+                        deployConfig.bindings,
+                        deployConfig.vars,
+                        additionalModules,
+                        deployConfig.compatibilityFlags,
+                        migrations,
+                );
+        }
 }

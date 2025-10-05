@@ -53,9 +53,9 @@
 	},
 
 	"containers": [
-		{
-			"class_name": "UserAppSandboxService",
-			"image": "./SandboxDockerfile",
+                {
+                        "class_name": "UserAppSandboxService",
+                        "image": "./UbuntuSandboxDockerfile",
 			// Altering max_instances value will have no effect. Please use the MAX_SANDBOX_INSTANCES var instead.
 			"max_instances": 10,
 			// ATTENTION: Altering instance_type value will have no effect. Please use the SANDBOX_INSTANCE_TYPE var instead.
@@ -129,10 +129,9 @@
 	//         "zone_id": "959f1abacaa04702ae094e6d728a612d"
 	//     }
 	// ],
-	"vars": {
-		"ALLOWED_EMAIL": "",
-		"DISPATCH_NAMESPACE": "",
-	},
+        "vars": {
+                "ALLOWED_EMAIL": "",
+        },
 	"workers_dev": true,
 	"preview_urls": true,
 }

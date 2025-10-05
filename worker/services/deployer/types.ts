@@ -72,17 +72,17 @@ export interface AssetConfig {
  * Used in the multipart form data when deploying
  */
 export interface WorkerMetadata {
-	main_module: string;
-	compatibility_date: string;
-	compatibility_flags?: string[];
-	assets?: {
-		jwt: string;
-		config?: AssetConfig;
-	};
-	bindings?: WorkerBinding[];
-	vars?: Record<string, string>;
-	migrations?: DurableObjectMigration;
-	exported_handlers?: string[]; // For Durable Object class exports
+        main_module: string;
+        compatibility_date: string;
+        compatibility_flags?: string[];
+        assets?: {
+                manifest?: AssetManifest;
+                config?: AssetConfig;
+        };
+        bindings?: WorkerBinding[];
+        vars?: Record<string, string>;
+        migrations?: DurableObjectMigration;
+        exported_handlers?: string[]; // For Durable Object class exports
 }
 
 /**
@@ -134,20 +134,22 @@ export interface AssetManifest {
  * Base deployment configuration
  */
 export interface DeployConfig {
-	accountId: string;
-	apiToken: string;
-	scriptName: string;
-	compatibilityDate: string;
+        accountId: string;
+        apiToken: string;
+        scriptName: string;
+        compatibilityDate: string;
 	compatibilityFlags?: string[];
 	workerContent: string;
 	assets?: AssetManifest;
 	bindings?: WorkerBinding[];
-	vars?: Record<string, string>;
+        vars?: Record<string, string>;
 }
 
-/**
- * Deployment configuration for Workers for Platforms
- */
-export interface DispatchDeployConfig extends DeployConfig {
-	dispatchNamespace: string;
+export interface PreparedDeployment {
+        scriptName: string;
+        metadata: WorkerMetadata;
+        workerContent: string;
+        assetsManifest?: AssetManifest;
+        assetContents?: Map<string, Buffer>;
+        additionalModules?: Map<string, string>;
 }
