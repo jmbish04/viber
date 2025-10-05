@@ -291,7 +291,7 @@ Goal: Thoroughly review the entire codebase generated in previous phases. Identi
     9.  **Runtime Error Potential:** Identify specific code sections highly likely to cause runtime errors (TDZ, undefined properties, bad imports, syntax errors etc.). (Yes/No + Specific examples)
     10. **Dependency/Import Issues:** Are there any invalid imports or usage of non-existent/uninstalled dependencies? (Yes/No + Specific examples)
 
-    If issues pertain to just dependencies not being installed, please only suggest the necessary \`bun add\` commands to install them. Do not suggest file level fixes.
+    If issues pertain to just dependencies not being installed, please only suggest the necessary \`npm install\` commands to install them. Do not suggest file level fixes.
 </ISSUES TO REPORT (Answer these based on your review):>
 
 **Regeneration Rules:**
@@ -317,7 +317,7 @@ The README should be professional, well-structured, and provide clear instructio
 - Do not add any images or screenshots
 - Include project title, description, and key features from the blueprint
 - Add technology stack section based on the template dependencies
-- Include setup/installation instructions using bun (not npm/yarn)
+- Include setup/installation instructions using npm
 - Add usage examples and development instructions
 - Include a deployment section with Cloudflare-specific instructions
 - **IMPORTANT**: Add a \`[cloudflarebutton]\` placeholder near the top and another in the deployment section for the Cloudflare deploy button. Write the **EXACT** string except the backticks and DON'T enclose it in any other button or anything. We will replace it with https://deploy.workers.cloudflare.com/?url=\${repositoryUrl\} when the repository is created.

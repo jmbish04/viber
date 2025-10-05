@@ -634,12 +634,12 @@ const derivedValue = propValue.toUpperCase(); // No state needed
 
 Example:
 \`\`\`sh
-bun add react@18
-bun add react-dom@18
-bun add zustand@4
-bun add immer@9
-bun add shadcn@2
-bun add @geist-ui/react@1
+npm install react@18
+npm install react-dom@18
+npm install zustand@4
+npm install immer@9
+npm install shadcn@2
+npm install @geist-ui/react@1
 \`\`\`
 </SETUP COMMANDS>
 `,
