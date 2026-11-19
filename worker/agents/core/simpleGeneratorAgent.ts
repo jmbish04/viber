@@ -1957,10 +1957,10 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 							? [name]
 							: [];
 					});
-					if (moduleNames.length > 0) {
-						const installCommands = moduleNames.map(
-							(moduleName) => `bun install ${moduleName}`,
-						);
+                                        if (moduleNames.length > 0) {
+                                                const installCommands = moduleNames.map(
+                                                        (moduleName) => `npm install ${moduleName}`,
+                                                );
 						await this.executeCommands(installCommands, false);
 
 						this.logger().info(
@@ -2709,12 +2709,20 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 			return;
 		}
 
-		commands = commands.map((cmd) =>
-			cmd
-				.trim()
-				.replace(/^\s*-\s*/, '')
-				.replace(/^npm/, 'bun'),
-		);
+                commands = commands.map((cmd) => {
+                        let sanitized = cmd.trim().replace(/^\s*-\s*/, '');
+                        sanitized = sanitized.replace(/^npm\s+i(?!\S)/, 'npm install');
+                        sanitized = sanitized.replace(/^bun\s+add/, 'npm install');
+                        sanitized = sanitized.replace(/^bun\s+install/, 'npm install');
+                        sanitized = sanitized.replace(/^bun\s+run/, 'npm run');
+                        sanitized = sanitized.replace(/^yarn\s+add/, 'npm install');
+                        sanitized = sanitized.replace(/^yarn\s+install/, 'npm install');
+                        sanitized = sanitized.replace(/^yarn\s+run/, 'npm run');
+                        sanitized = sanitized.replace(/^pnpm\s+add/, 'npm install');
+                        sanitized = sanitized.replace(/^pnpm\s+install/, 'npm install');
+                        sanitized = sanitized.replace(/^pnpm\s+run/, 'npm run');
+                        return sanitized;
+                });
 		this.logger().info(
 			`AI suggested ${commands.length} commands to run: ${commands.join(', ')}`,
 		);
@@ -2807,12 +2815,9 @@ export class SimpleCodeGeneratorAgent extends Agent<Env, CodeGenState> {
 					retryCount++;
 
 					// For install commands, try AI regeneration
-					const failedInstallCommands = failedCommands.filter(
-						(cmd) =>
-							cmd.startsWith('bun') ||
-							cmd.startsWith('npm') ||
-							cmd.includes('install'),
-					);
+                                        const failedInstallCommands = failedCommands.filter((cmd) =>
+                                                cmd.startsWith('npm') || cmd.includes('install'),
+                                        );
 
 					if (
 						failedInstallCommands.length > 0 &&

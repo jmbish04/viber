@@ -774,13 +774,14 @@ cat << 'EOF' | patch filename.ext
 EOF
 \`\`\`
 
-You may optionally suggest install commands if needed for any dependencies (only bun is available)
+You may optionally suggest npm commands if needed for dependency management or project scripts.
 
 \`\`\`
 # Optional: Add bash comments to explain the install commands just before the install commands
-# Install well known compatible major versions or simply the latest rather than specific versions. Eg: bun install react react-dom
+# Install well known compatible major versions or simply the latest rather than specific versions. Eg: npm install react react-dom
 # Do not suggest install commands for already installed dependencies
-bun install <dependencies>
+npm install <dependencies>
+# To run package scripts, use: npm run <script-name>
 \`\`\`
 
 IMPORTANT RULES:
@@ -791,7 +792,7 @@ IMPORTANT RULES:
 5. Each file can use consistently either full content OR unified diff depending on other instructions.
 6. Write multiple files in sequence, separated by newlines
 7. At the end of the output, there should always be a EOF marker
-8. Do not add any additional bash commands or instructions. This would be parsed by a custom parser, not by the shell. No commands are supported other than bun add/install
+8. Do not add any additional bash commands or instructions. This would be parsed by a custom parser, not by the shell. No commands are supported other than npm install/run
 </OUTPUT FORMAT>
 `;
 	}

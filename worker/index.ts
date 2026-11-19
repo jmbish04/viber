@@ -1,7 +1,6 @@
 import { createLogger } from './logger';
 import { SmartCodeGeneratorAgent } from './agents/core/smartGeneratorAgent';
 import { proxyToSandbox } from '@cloudflare/sandbox';
-import { isDispatcherAvailable } from './utils/dispatcherUtils';
 import { createApp } from './app';
 // import * as Sentry from '@sentry/cloudflare';
 // import { sentryOptions } from './observability/sentry';
@@ -48,34 +47,15 @@ async function handleUserAppRequest(
 		return sandboxResponse;
 	}
 
-	// 2. If sandbox misses, attempt to dispatch to a deployed worker.
-	logger.info(
-		`Sandbox miss for ${hostname}, attempting dispatch to permanent worker.`,
-	);
-	if (!isDispatcherAvailable(env)) {
-		logger.warn(`Dispatcher not available, cannot serve: ${hostname}`);
-		return new Response('This application is not currently available.', {
-			status: 404,
-		});
-	}
-
-	// Extract the app name (e.g., "xyz" from "xyz.build.cloudflare.dev").
-	const appName = hostname.split('.')[0];
-	const dispatcher = env['DISPATCHER'];
-
-	try {
-		const worker = dispatcher.get(appName);
-		return await worker.fetch(request);
-	} catch (error: any) {
-		// This block catches errors if the binding doesn't exist or if worker.fetch() fails.
-		logger.warn(
-			`Error dispatching to worker '${appName}': ${error instanceof Error ? error.message : String(error)}`,
-		);
-		return new Response(
-			'An error occurred while loading this application.',
-			{ status: 500 },
-		);
-	}
+        logger.info(
+                `Sandbox miss for ${hostname}; returning preview unavailable response.`,
+        );
+        return new Response(
+                'This preview is no longer available. Please check the generated GitHub pull request for build artifacts.',
+                {
+                        status: 404,
+                },
+        );
 }
 
 /**

@@ -24,7 +24,7 @@ interface GenerateSetupCommandsArgs {
 const SYSTEM_PROMPT = `You are an Expert DevOps Engineer at Cloudflare specializing in project setup and dependency management. Your task is to analyze project requirements and generate precise installation commands for missing dependencies.`;
 
 const SETUP_USER_PROMPT = `## TASK
-Analyze the blueprint and generate exact \`bun add\` commands for missing dependencies. Only suggest packages that are NOT already in the starting template.
+Analyze the blueprint and generate exact \`npm install\` commands for missing dependencies. Only suggest packages that are NOT already in the starting template.
 
 ## EXAMPLES
 
@@ -33,8 +33,8 @@ Blueprint mentions: "2D Canvas game with score persistence"
 Starting template has: react, typescript, tailwindcss
 Output:
 \`\`\`bash
-bun add zustand@^4.5.0
-bun add canvas-confetti@^1.9.0
+npm install zustand@^4.5.0
+npm install canvas-confetti@^1.9.0
 \`\`\`
 
 **Example 2 - Dashboard with Charts:**
@@ -42,9 +42,9 @@ Blueprint mentions: "Analytics dashboard with interactive charts"
 Starting template has: react, typescript, vite
 Output:
 \`\`\`bash
-bun add recharts@^2.12.0
-bun add date-fns@^3.6.0
-bun add @headlessui/react@^2.0.0
+npm install recharts@^2.12.0
+npm install date-fns@^3.6.0
+npm install @headlessui/react@^2.0.0
 \`\`\`
 
 **Example 3 - Already Complete:**
@@ -56,7 +56,7 @@ Output:
 \`\`\`
 
 ## RULES
-- Use ONLY \`bun add\` commands
+- Use ONLY \`npm install\` commands (add --save-dev when appropriate)
 - Include specific version constraints (e.g., ^4.5.0)
 - Check version compatibility (React 18 vs 19)
 - Skip dependencies already in starting template

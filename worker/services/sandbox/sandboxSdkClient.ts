@@ -42,9 +42,9 @@ import { env } from 'cloudflare:workers';
 import { BaseSandboxService } from './BaseSandboxService';
 
 import {
-	buildDeploymentConfig,
-	parseWranglerConfig,
-	deployToDispatch,
+        buildDeploymentConfig,
+        parseWranglerConfig,
+        deployWorker,
 } from '../deployer/deploy';
 import { createAssetManifest } from '../deployer/utils/index';
 import { CodeFixResult, FileFetcher, fixProjectIssues } from '../code-fixer';
@@ -748,8 +748,8 @@ export class SandboxSdkClient extends BaseSandboxService {
 	): Promise<string> {
 		try {
 			// Use CLI tools for enhanced monitoring instead of direct process start
-			const process = await this.getSandbox().startProcess(
-				`VITE_LOGGER_TYPE=json monitor-cli process start --instance-id ${instanceId} --port ${port} -- bun run dev`,
+                        const process = await this.getSandbox().startProcess(
+                                `VITE_LOGGER_TYPE=json monitor-cli process start --instance-id ${instanceId} --port ${port} -- npm run dev`,
 				{ cwd: instanceId },
 			);
 			this.logger.info('Development server started', {
@@ -1164,11 +1164,11 @@ export class SandboxSdkClient extends BaseSandboxService {
 				);
 			}
 
-			this.logger.info('Installing dependencies', { instanceId });
-			const [installResult, tunnelURL] = await Promise.all([
-				this.executeCommand(instanceId, `bun install`),
-				tunnelUrlPromise,
-			]);
+                        this.logger.info('Installing dependencies', { instanceId });
+                        const [installResult, tunnelURL] = await Promise.all([
+                                this.executeCommand(instanceId, `npm install`),
+                                tunnelUrlPromise,
+                        ]);
 			this.logger.info('Dependencies installed', {
 				instanceId,
 				tunnelURL,
@@ -2030,12 +2030,12 @@ export class SandboxSdkClient extends BaseSandboxService {
 			const typecheckIssues: CodeIssue[] = [];
 
 			// Run ESLint and TypeScript check in parallel
-			const [lintResult, tscResult] = await Promise.allSettled([
-				this.executeCommand(instanceId, 'bun run lint'),
-				this.executeCommand(
-					instanceId,
-					'bunx tsc -b --incremental --noEmit --pretty false',
-				),
+                        const [lintResult, tscResult] = await Promise.allSettled([
+                                this.executeCommand(instanceId, 'npm run lint --if-present'),
+                                this.executeCommand(
+                                        instanceId,
+                                        'npx tsc -b --incremental --noEmit --pretty false',
+                                ),
 			]);
 
 			const results: StaticAnalysisResponse = {
@@ -2313,46 +2313,53 @@ export class SandboxSdkClient extends BaseSandboxService {
 			const metadata = await this.getInstanceMetadata(instanceId);
 			const projectName = metadata?.projectName || instanceId;
 
-			// Get credentials from environment (secure - no exposure to external processes)
-			const accountId = env.CLOUDFLARE_ACCOUNT_ID;
-			const apiToken = env.CLOUDFLARE_API_TOKEN;
-
-			if (!accountId || !apiToken) {
-				throw new Error(
-					'CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_API_TOKEN must be set in environment',
-				);
-			}
+                        // Credentials are optional in single-worker mode but retained
+                        // for compatibility with existing configuration structures.
+                        const accountId = env.CLOUDFLARE_ACCOUNT_ID || '';
+                        const apiToken = env.CLOUDFLARE_API_TOKEN || '';
 
 			const sandbox = this.getSandbox();
 			this.logger.info('Processing deployment', { instanceId });
 
-			// Step 1: Run build commands (bun run build && bunx wrangler build)
-			this.logger.info('Building project');
-			const buildResult = await this.executeCommand(
-				instanceId,
-				'bun run build',
-			);
-			if (buildResult.exitCode !== 0) {
-				this.logger.warn(
-					'Build step failed or not available',
-					buildResult.stdout,
-					buildResult.stderr,
-				);
-				throw new Error(`Build failed: ${buildResult.stderr}`);
-			}
+                        // Step 1: Install dependencies and run npm build/test workflow
+                        this.logger.info('Installing project dependencies with npm');
+                        const installResult = await this.executeCommand(
+                                instanceId,
+                                'npm install',
+                        );
+                        if (installResult.exitCode !== 0) {
+                                this.logger.error('npm install failed', {
+                                        stdout: installResult.stdout,
+                                        stderr: installResult.stderr,
+                                });
+                                throw new Error(`Dependency installation failed: ${installResult.stderr}`);
+                        }
 
-			const wranglerBuildResult = await this.executeCommand(
-				instanceId,
-				'bunx wrangler build',
-			);
-			if (wranglerBuildResult.exitCode !== 0) {
-				this.logger.warn(
-					'Wrangler build failed',
-					wranglerBuildResult.stdout,
-					wranglerBuildResult.stderr,
-				);
-				// Continue anyway - some projects might not need wrangler build
-			}
+                        this.logger.info('Running npm run build (if present)');
+                        const buildResult = await this.executeCommand(
+                                instanceId,
+                                'npm run build --if-present',
+                        );
+                        if (buildResult.exitCode !== 0) {
+                                this.logger.error('npm run build failed', {
+                                        stdout: buildResult.stdout,
+                                        stderr: buildResult.stderr,
+                                });
+                                throw new Error(`Build failed: ${buildResult.stderr}`);
+                        }
+
+                        this.logger.info('Running npm run test (if present)');
+                        const testResult = await this.executeCommand(
+                                instanceId,
+                                'npm run test --if-present',
+                        );
+                        if (testResult.exitCode !== 0) {
+                                this.logger.error('npm run test failed', {
+                                        stdout: testResult.stdout,
+                                        stderr: testResult.stderr,
+                                });
+                                throw new Error(`Tests failed: ${testResult.stderr}`);
+                        }
 
 			// Step 2: Parse wrangler config from KV
 			this.logger.info('Reading wrangler configuration from KV');
@@ -2499,62 +2506,43 @@ export class SandboxSdkClient extends BaseSandboxService {
 				);
 			}
 
-			// Step 5: Override config for dispatch deployment
-			const dispatchConfig = {
-				...config,
-				name: config.name,
-			};
+                        // Step 5: Build deployment config using pure function
+                        const deployConfig = buildDeploymentConfig(
+                                config,
+                                workerContent,
+                                accountId,
+                                apiToken,
+                                assetsManifest,
+                                config.compatibility_flags,
+                        );
 
-			// Step 6: Build deployment config using pure function
-			const deployConfig = buildDeploymentConfig(
-				dispatchConfig,
-				workerContent,
-				accountId,
-				apiToken,
-				assetsManifest,
-				config.compatibility_flags,
-			);
+                        // Step 6: Prepare deployment package for GitHub automation
+                        const preparedDeployment = await deployWorker(
+                                deployConfig,
+                                fileContents,
+                                additionalModules,
+                                config.migrations,
+                                config.assets,
+                        );
 
-			// Step 7: Deploy using pure function
-			this.logger.info('Deploying to Cloudflare');
-			if ('DISPATCH_NAMESPACE' in env) {
-				this.logger.info('Using dispatch namespace', {
-					dispatchNamespace: env.DISPATCH_NAMESPACE,
-				});
-				await deployToDispatch(
-					{
-						...deployConfig,
-						dispatchNamespace: env.DISPATCH_NAMESPACE as string,
-					},
-					fileContents,
-					additionalModules,
-					config.migrations,
-					config.assets,
-				);
-			} else {
-				throw new Error(
-					'DISPATCH_NAMESPACE not found in environment variables, cannot deploy without dispatch namespace',
-				);
-			}
+                        // Step 7: Summarize results
+                        const deploymentSummary = `Prepared deployment package for ${preparedDeployment.scriptName} with ${
+                                preparedDeployment.assetsManifest
+                                        ? Object.keys(preparedDeployment.assetsManifest).length
+                                        : 0
+                        } asset(s).`;
 
-			// Step 8: Determine deployment URL
-			const deployedUrl = `${this.getProtocolForHost()}://${projectName}.${getPreviewDomain(env)}`;
-			const deploymentId = projectName;
+                        this.logger.info('Build and test workflow completed', {
+                                instanceId,
+                                projectName,
+                                summary: deploymentSummary,
+                        });
 
-			this.logger.info('Deployment successful', {
-				instanceId,
-				deployedUrl,
-				deploymentId,
-				mode: 'dispatch-namespace',
-			});
-
-			return {
-				success: true,
-				message: `Successfully deployed ${instanceId} using secure API deployment`,
-				deployedUrl,
-				deploymentId,
-				output: `Deployed`,
-			};
+                        return {
+                                success: true,
+                                message: `Build, test, and packaging completed for ${projectName}.`,
+                                output: deploymentSummary,
+                        };
 		} catch (error) {
 			this.logger.error('deployToCloudflareWorkers', error, {
 				instanceId,
